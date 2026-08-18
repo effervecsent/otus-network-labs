@@ -68,5 +68,28 @@ Leaf-03 10.0.0.3/32
  LEAF-03 (интерфейс Eth2): 172.16.3.5
 
 
+|Устройство|Интерфейс|IP-адрес и Маска|Тип подключения|Назначение 
+|---|---|---|---|---|
+SPINE-01|lo0|10.0.0.1/32|Loopback Локальный Router ID
+SPINE-01|Eth1|172.16.1.2/30|P2P Линк|LEAF-01 (Eth1)
+SPINE-01|Eth2|172.16.2.2/30|P2P Линк|LEAF-02 (Eth1)
+SPINE-01|Eth3|172.16.3.2/30|P2P Линк|LEAF-03 (Eth1)|
+SPINE-02|lo0|10.0.0.2/32|Loopback Локальный Router ID|
+SPINE-02|Eth1|172.16.1.6/30|P2P Линк|LEAF-01 (Eth2)
+SPINE-02|Eth2|172.16.2.6/30|P2P Линк|LEAF-02 (Eth2)|
+SPINE-02|Eth3|172.16.3.6/30|P2P Линк|LEAF-03 (Eth2)
+LEAF-01|lo0|10.0.0.1/32|Loopback Локальный Router ID
+LEAF-01|Eth1|172.16.1.1/30|P2P Линк|SPINE-01 (Eth1)
+LEAF-01|Eth2|172.16.1.5/30|P2P Линк|SPINE-02 (Eth1)
+LEAF-02|lo0|10.0.0.2/32|Loopback Локальный Router ID
+LEAF-02|Eth1|172.16.2.1/30|P2P Линк|SPINE-01 (Eth2)
+LEAF-02|Eth2|172.16.2.5/30|P2P Линк|SPINE-02 (Eth2)
+LEAF-03|lo0|10.0.0.3/32|LoopbackЛокальный Router ID
+LEAF-03|Eth1|172.16.3.1/30|P2P Линк|SPINE-01 (Eth3)
+LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
+
+
+
+
 
 
