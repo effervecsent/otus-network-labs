@@ -94,23 +94,121 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 Все коммутаторы находятся в зоне Area 0 
 Настройки на коммутаторах на примере Spine-01: 
 
+```
 SPINE-01(config)#router ospf 1
 SPINE-01(config-router-ospf)#router-id 10.0.1.1
 SPINE-01(config-router-ospf)#exi
 SPINE-01(config)#interface eth 1-3
 SPINE-01(config-if-Et1-3)#ip ospf area 0
 SPINE-01(config-if-Et1-3)#ip ospf network point-to-point 
-SPINE-01(config-if-Et1-3)#
-SPINE-01(config-if-Et1-3)#
 SPINE-01(config-if-Et1-3)#exi
-SPINE-01(config)#
 SPINE-01(config)#inter loopback 0
 SPINE-01(config-if-Lo0)#ip ospf area 0
+```
+
+### Проверка связности 
+
+```
+SPINE-01#sh ip ospf ne
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.0.1        1        default  1   FULL                   00:00:34    172.16.1.1      Ethernet1
+10.0.0.2        1        default  1   FULL                   00:00:31    172.16.2.1      Ethernet2
+10.0.0.3        1        default  1   FULL                   00:00:33    172.16.3.1      Ethernet3
+
+SPINE-01#sh ip route ospf 
+
+ O        10.0.0.1/32 [110/20] via 172.16.1.1, Ethernet1
+ O        10.0.0.2/32 [110/20] via 172.16.2.1, Ethernet2
+ O        10.0.0.3/32 [110/20] via 172.16.3.1, Ethernet3
+ O        10.0.2.2/32 [110/30] via 172.16.1.1, Ethernet1
+                               via 172.16.2.1, Ethernet2
+                               via 172.16.3.1, Ethernet3
+ O        172.16.1.4/30 [110/20] via 172.16.1.1, Ethernet1
+ O        172.16.2.4/30 [110/20] via 172.16.2.1, Ethernet2
+ O        172.16.3.4/30 [110/20] via 172.16.3.1, Ethernet3
+
+```
+
+```
+SPINE-02#sh ip ospf nei
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.0.1        1        default  1   FULL                   00:00:32    172.16.1.5      Ethernet1
+10.0.0.2        1        default  1   FULL                   00:00:34    172.16.2.5      Ethernet2
+10.0.0.3        1        default  1   FULL                   00:00:32    172.16.3.5      Ethernet3
+SPINE-02#
 
 
+SPINE-02#sh ip rou ospf
+
+ O        10.0.0.2/32 [110/20] via 172.16.2.5, Ethernet2
+ O        10.0.0.3/32 [110/20] via 172.16.3.5, Ethernet3
+ O        10.0.1.1/32 [110/30] via 172.16.1.5, Ethernet1
+                               via 172.16.2.5, Ethernet2
+                               via 172.16.3.5, Ethernet3
+ O        172.16.1.0/30 [110/20] via 172.16.1.5, Ethernet1
+ O        172.16.2.0/30 [110/20] via 172.16.2.5, Ethernet2
+ O        172.16.3.0/30 [110/20] via 172.16.3.5, Ethernet3
+
+SPINE-02#
+```
 
 
+```
+LEAF-01#sh ip rou ospf
+ O        10.0.1.1/32 [110/20] via 172.16.1.2, Ethernet1
+ O        10.0.2.2/32 [110/20] via 172.16.1.6, Ethernet2
+ O        172.16.2.0/30 [110/20] via 172.16.1.2, Ethernet1
+ O        172.16.2.4/30 [110/20] via 172.16.1.6, Ethernet2
+ O        172.16.3.0/30 [110/20] via 172.16.1.2, Ethernet1
+ O        172.16.3.4/30 [110/20] via 172.16.1.6, Ethernet2
 
 
+LEAF-01#sh ip ospf nei
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:37    172.16.1.2      Ethernet1
+10.0.2.2        1        default  0   FULL                   00:00:30    172.16.1.6      Ethernet2
+LEAF-01#
 
+```
+
+```
+LEAF-02#sh ip rou ospf 
+
+ O        10.0.0.1/32 [110/30] via 172.16.2.2, Ethernet1
+                               via 172.16.2.6, Ethernet2
+ O        10.0.0.3/32 [110/30] via 172.16.2.2, Ethernet1
+                               via 172.16.2.6, Ethernet2
+ O        10.0.1.1/32 [110/20] via 172.16.2.2, Ethernet1
+ O        10.0.2.2/32 [110/20] via 172.16.2.6, Ethernet2
+ O        172.16.1.0/30 [110/20] via 172.16.2.2, Ethernet1
+ O        172.16.1.4/30 [110/20] via 172.16.2.6, Ethernet2
+ O        172.16.3.0/30 [110/20] via 172.16.2.2, Ethernet1
+ O        172.16.3.4/30 [110/20] via 172.16.2.6, Ethernet2
+
+LEAF-02#sh ip ospf nei
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:36    172.16.2.2      Ethernet1
+10.0.2.2        1        default  0   FULL                   00:00:34    172.16.2.6      Ethernet2
+```
+
+
+```
+LEAF-03#sh ip route ospf
+
+ O        10.0.0.1/32 [110/30] via 172.16.3.2, Ethernet1
+                               via 172.16.3.6, Ethernet2
+ O        10.0.0.2/32 [110/30] via 172.16.3.2, Ethernet1
+                               via 172.16.3.6, Ethernet2
+ O        10.0.1.1/32 [110/20] via 172.16.3.2, Ethernet1
+ O        10.0.2.2/32 [110/20] via 172.16.3.6, Ethernet2
+ O        172.16.1.0/30 [110/20] via 172.16.3.2, Ethernet1
+ O        172.16.1.4/30 [110/20] via 172.16.3.6, Ethernet2
+ O        172.16.2.0/30 [110/20] via 172.16.3.2, Ethernet1
+ O        172.16.2.4/30 [110/20] via 172.16.3.6, Ethernet2
+
+LEAF-03#sh ip ospf nei
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:35    172.16.3.2      Ethernet1
+10.0.2.2        1        default  0   FULL                   00:00:29    172.16.3.6      Ethernet2
+```
 
