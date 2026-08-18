@@ -94,6 +94,19 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 Все коммутаторы находятся в зоне Area 0 
 Настройки на коммутаторах на примере Spine-01: 
 
+SPINE-01(config)#router ospf 1
+SPINE-01(config-router-ospf)#router-id 10.0.1.1
+SPINE-01(config-router-ospf)#exi
+SPINE-01(config)#interface eth 1-3
+SPINE-01(config-if-Et1-3)#ip ospf area 0
+SPINE-01(config-if-Et1-3)#ip ospf network point-to-point 
+SPINE-01(config-if-Et1-3)#
+SPINE-01(config-if-Et1-3)#
+SPINE-01(config-if-Et1-3)#exi
+SPINE-01(config)#
+SPINE-01(config)#inter loopback 0
+SPINE-01(config-if-Lo0)#ip ospf area 0
+
 
 
 
