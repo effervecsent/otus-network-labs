@@ -84,7 +84,7 @@ LEAF-01|Eth2|172.16.1.5/30|P2P Линк|SPINE-02 (Eth1)
 LEAF-02|lo0|10.0.0.2/32|Loopback Локальный Router ID
 LEAF-02|Eth1|172.16.2.1/30|P2P Линк|SPINE-01 (Eth2)
 LEAF-02|Eth2|172.16.2.5/30|P2P Линк|SPINE-02 (Eth2)
-LEAF-03|lo0|10.0.0.3/32|LoopbackЛокальный Router ID
+LEAF-03|lo0|10.0.0.3/32|Loopback Локальный Router ID
 LEAF-03|Eth1|172.16.3.1/30|P2P Линк|SPINE-01 (Eth3)
 LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 
