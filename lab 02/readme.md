@@ -239,3 +239,147 @@ Neighbor ID     Instance VRF      Pri State                  Dead Time   Address
 10.0.2.2        1        default  0   FULL                   00:00:29    172.16.3.6      Ethernet2
 ```
 
+
+Ping удаленных loopback-интерфейсов:
+```
+LEAF-01#
+LEAF-01#ping 10.0.0.3
+PING 10.0.0.3 (10.0.0.3) 72(100) bytes of data.
+80 bytes from 10.0.0.3: icmp_seq=1 ttl=63 time=29.9 ms
+80 bytes from 10.0.0.3: icmp_seq=2 ttl=63 time=21.0 ms
+80 bytes from 10.0.0.3: icmp_seq=3 ttl=63 time=19.8 ms
+80 bytes from 10.0.0.3: icmp_seq=4 ttl=63 time=21.8 ms
+80 bytes from 10.0.0.3: icmp_seq=5 ttl=63 time=19.6 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 97ms
+rtt min/avg/max/mdev = 19.617/22.467/29.940/3.832 ms, pipe 2, ipg/ewma 24.257/26.058 ms
+LEAF-01#
+```
+
+LEAF-03#
+LEAF-03#ping 10.0.0.1
+PING 10.0.0.1 (10.0.0.1) 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=63 time=143 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=63 time=138 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=63 time=136 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=63 time=132 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=63 time=127 ms
+
+--- 10.0.0.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 52ms
+rtt min/avg/max/mdev = 127.135/135.442/143.030/5.410 ms, pipe 5, ipg/ewma 13.209/138.842 ms
+LEAF-03#ping 10.0.0.2
+PING 10.0.0.2 (10.0.0.2) 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=63 time=45.6 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=63 time=41.8 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=63 time=37.5 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=63 time=31.9 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=63 time=17.7 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 80ms
+rtt min/avg/max/mdev = 17.793/34.967/45.662/9.721 ms, pipe 4, ipg/ewma 20.005/39.586 ms
+
+
+Cостояние LSDB на всех коммутаторах: 
+
+```
+LEAF-03#
+
+LEAF-02#
+LEAF-02#sh ip ospf data
+
+            OSPF Router with ID(10.0.0.2) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.0.1.1        10.0.1.1        1059        0x80000034   0xd9c7   7
+10.0.2.2        10.0.2.2        1085        0x80000035   0x4d35   7
+10.0.0.1        10.0.0.1        1843        0x8000002d   0x78e9   5
+10.0.0.2        10.0.0.2        1105        0x80000031   0xc98d   5
+10.0.0.3        10.0.0.3        1059        0x80000031   0x68e7   5
+LEAF-02#
+
+
+
+LEAF-03#sh ip ospf data 
+
+            OSPF Router with ID(10.0.0.3) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.0.1.1        10.0.1.1        921         0x80000034   0xd9c7   7
+10.0.2.2        10.0.2.2        947         0x80000035   0x4d35   7
+10.0.0.2        10.0.0.2        969         0x80000031   0xc98d   5
+10.0.0.1        10.0.0.1        1706        0x8000002d   0x78e9   5
+10.0.0.3        10.0.0.3        920         0x80000031   0x68e7   5
+LEAF-03#
+
+```
+SPINE-01#sh ip ospf data
+
+            OSPF Router with ID(10.0.1.1) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.0.0.1        10.0.0.1        1736        0x8000002d   0x78e9   5
+10.0.2.2        10.0.2.2        979         0x80000035   0x4d35   7
+10.0.0.2        10.0.0.2        1000        0x80000031   0xc98d   5
+10.0.0.3        10.0.0.3        952         0x80000031   0x68e7   5
+10.0.1.1        10.0.1.1        951         0x80000034   0xd9c7   7
+SPINE-01#
+
+SPINE-02#sh ip ospf data
+
+            OSPF Router with ID(10.0.2.2) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.0.1.1        10.0.1.1        975         0x80000034   0xd9c7   7
+10.0.0.1        10.0.0.1        1757        0x8000002d   0x78e9   5
+10.0.0.2        10.0.0.2        1021        0x80000031   0xc98d   5
+10.0.0.3        10.0.0.3        974         0x80000031   0x68e7   5
+10.0.2.2        10.0.2.2        999         0x80000035   0x4d35   7
+SPINE-02#
+
+LEAF-01#sh ip ospf data
+
+            OSPF Router with ID(10.0.0.1) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.0.1.1        10.0.1.1        1031        0x80000034   0xd9c7   7
+10.0.2.2        10.0.2.2        1057        0x80000035   0x4d35   7
+10.0.0.2        10.0.0.2        1079        0x80000031   0xc98d   5
+10.0.0.3        10.0.0.3        1031        0x80000031   0x68e7   5
+10.0.0.1        10.0.0.1        1813        0x8000002d   0x78e9   5
+LEAF-01#
+
+LEAF-02#
+LEAF-02#sh ip ospf data
+
+            OSPF Router with ID(10.0.0.2) (Instance ID 1) (VRF default)
+
+
+                 Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age         Seq#         Checksum Link count
+10.0.1.1        10.0.1.1        1059        0x80000034   0xd9c7   7
+10.0.2.2        10.0.2.2        1085        0x80000035   0x4d35   7
+10.0.0.1        10.0.0.1        1843        0x8000002d   0x78e9   5
+10.0.0.2        10.0.0.2        1105        0x80000031   0xc98d   5
+10.0.0.3        10.0.0.3        1059        0x80000031   0x68e7   5
+LEAF-02#
+```
+
