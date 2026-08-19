@@ -383,3 +383,104 @@ Link ID         ADV Router      Age         Seq#         Checksum Link count
 LEAF-02#
 ```
 
+
+### Настройка bfd
+
+Между Spine-01 eth1 и Leaf-01 eth1 настроен BFD:
+```
+SPINE-01(config)#inter eth1 
+SPINE-01(config-if-Et1)#bfd interval 200 min-rx 200 multiplier 3
+SPINE-01(config-if-Et1)#ip ospf neighbor bfd
+SPINE-01(config-if-Et1)#exit
+
+
+LEAF-01(config)#inter eth1 
+LEAF-01(config-if-Et1)#bfd interval 200  min-rx 200 multiplier 3
+LEAF-01(config-if-Et1)#ip ospf neighbor bfd
+```
+
+Проверка:
+
+```
+SPINE-01#show bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+---------- ----------- ----------- -------------------- ------- ---------------
+172.16.1.1 4267533140  2397352423        Ethernet1(14)  normal  08/19/26 08:46 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+
+
+
+SPINE-01#show bfd peers det
+VRF name: default
+-----------------
+Peer Addr 172.16.1.1, Intf Ethernet1, Type normal, Role active, State Up
+VRF default, LAddr 172.16.1.2, LD/RD 3021997832/369354112
+Session state is Up and not using echo function
+Hardware Acceleration: Async Off, Echo Off
+Last Up 08/19/26 08:53:35.728
+Last Down NA
+Last Diag: No Diagnostic
+Authentication mode: None
+Shared-secret profile: None
+TxInt: 200 ms, RxInt: 200 ms, Multiplier: 3
+Received RxInt: 200 ms, Received Multiplier: 3
+Rx Count: 1022, Rx Interval (ms) min/max/avg: 69/256/175 last: 27 ms ago
+Tx Count: 1028, Tx Interval (ms) min/max/avg: 150/200/174 last: 80 ms ago
+Detect Time: 600 ms
+Sched Delay: 1*TxInt: 1007, 2*TxInt: 20, 3*TxInt: 0, GT 3*TxInt: 0
+Registered protocols: ospf
+Uptime: 02:59.17
+Last packet:  Version: 1             - Diagnostic: 0          
+              State bit: Up          - Demand bit: 0          
+              Poll bit: 0            - Final bit: 0           
+              Multiplier: 3          - Length: 24             
+              My Discr.: 369354112   - Your Discr.: 3021997832
+              Min tx interval: 200   - Min rx interval: 200   
+              Min Echo interval: 200                          
+
+
+LEAF-01#sh bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+----------- ---------- ----------- -------------------- ------- ---------------
+172.16.1.2  369354112  3021997832        Ethernet1(14)  normal  08/19/26 08:53 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+
+LEAF-01#sh bfd peers det
+VRF name: default
+-----------------
+Peer Addr 172.16.1.2, Intf Ethernet1, Type normal, Role active, State Up
+VRF default, LAddr 172.16.1.1, LD/RD 369354112/3021997832
+Session state is Up and not using echo function
+Hardware Acceleration: Async Off, Echo Off
+Last Up 08/19/26 08:53:34.649
+Last Down NA
+Last Diag: No Diagnostic
+Authentication mode: None
+Shared-secret profile: None
+TxInt: 200 ms, RxInt: 200 ms, Multiplier: 3
+Received RxInt: 200 ms, Received Multiplier: 3
+Rx Count: 1194, Rx Interval (ms) min/max/avg: 60/272/174 last: 129 ms ago
+Tx Count: 1189, Tx Interval (ms) min/max/avg: 151/200/175 last: 147 ms ago
+Detect Time: 600 ms
+Sched Delay: 1*TxInt: 1161, 2*TxInt: 27, 3*TxInt: 0, GT 3*TxInt: 0
+Registered protocols: ospf
+Uptime: 03:28.33
+Last packet:  Version: 1             - Diagnostic: 0         
+              State bit: Up          - Demand bit: 0         
+              Poll bit: 0            - Final bit: 0          
+              Multiplier: 3          - Length: 24            
+              My Discr.: 3021997832  - Your Discr.: 369354112
+              Min tx interval: 200   - Min rx interval: 200  
+              Min Echo interval: 200                         
+
+```
