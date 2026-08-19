@@ -683,3 +683,51 @@ Type-5 Ext LSAs: 0
 ID               Type   Intf   Nbrs (full) RTR LSA NW LSA  SUM LSA ASBR LSA TYPE-7 LSA
 0.0.0.3          stub   3      2    (2   ) 3       0       18      0       0      
 ```
+
+Для проверки type 5 LSA был добавлен тестовый статический маршрут на Spine-01 и применена редистрибуция статических адресов в ospf: 
+```
+SPINE-01(config)#ip route 8.8.8.0/24 null 0
+SPINE-01(config)#router ospf 1
+SPINE-01(config-router-ospf)#redistribute static 
+```
+
+Теперь видно, что Type5-lsa не видно в Stub-area: 
+
+```
+LEAF-03#sh ip ospf summ
+OSPF instance 1 with ID 10.0.0.3, VRF default
+Time since last SPF: 4789 s
+Max LSAs: 12000, Total LSAs: 21
+Type-5 Ext LSAs: 0
+ID               Type   Intf   Nbrs (full) RTR LSA NW LSA  SUM LSA ASBR LSA TYPE-7 LSA
+0.0.0.3          stub   3      2    (2   ) 3       0       18      0       0      
+
+LEAF-03#
+LEAF-03#
+
+```
+В нормальной area type-5 есть:
+```
+SPINE-02#sh ip ospf summ
+OSPF instance 1 with ID 10.0.2.2, VRF default, ABR
+Time since last SPF: 367 s
+Max LSAs: 12000, Total LSAs: 32
+Type-5 Ext LSAs: 1
+ID               Type   Intf   Nbrs (full) RTR LSA NW LSA  SUM LSA ASBR LSA TYPE-7 LSA
+0.0.0.0          normal 3      2    (2   ) 7       0       24      0       0      
+0.0.0.3          stub   1      1    (1   ) 7       0       24      0       0      
+
+SPINE-02#
+SPINE-02#
+
+SPINE-01#
+SPINE-01#sh ip ospf summ
+OSPF instance 1 with ID 10.0.1.1, VRF default, ASBR ABR
+Time since last SPF: 580 s
+Max LSAs: 12000, Total LSAs: 32
+Type-5 Ext LSAs: 1
+ID               Type   Intf   Nbrs (full) RTR LSA NW LSA  SUM LSA ASBR LSA TYPE-7 LSA
+0.0.0.0          normal 3      2    (2   ) 7       0       24      0       0      
+0.0.0.3          stub   1      1    (1   ) 7       0       24      0       0      
+```
+
