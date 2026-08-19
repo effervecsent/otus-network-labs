@@ -257,6 +257,7 @@ rtt min/avg/max/mdev = 19.617/22.467/29.940/3.832 ms, pipe 2, ipg/ewma 24.257/26
 LEAF-01#
 ```
 
+```
 LEAF-03#
 LEAF-03#ping 10.0.0.1
 PING 10.0.0.1 (10.0.0.1) 72(100) bytes of data.
@@ -280,6 +281,7 @@ PING 10.0.0.2 (10.0.0.2) 72(100) bytes of data.
 --- 10.0.0.2 ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 80ms
 rtt min/avg/max/mdev = 17.793/34.967/45.662/9.721 ms, pipe 4, ipg/ewma 20.005/39.586 ms
+```
 
 
 Cостояние LSDB на всех коммутаторах: 
