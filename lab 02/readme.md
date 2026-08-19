@@ -323,6 +323,8 @@ Link ID         ADV Router      Age         Seq#         Checksum Link count
 LEAF-03#
 
 ```
+
+```
 SPINE-01#sh ip ospf data
 
             OSPF Router with ID(10.0.1.1) (Instance ID 1) (VRF default)
