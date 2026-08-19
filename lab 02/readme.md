@@ -548,3 +548,138 @@ Ethernet2 is up
   Message-digest authentication, using key id 1
   Traffic engineering is disabled
 ```
+
+
+### Настройка stub-зоны 
+
+Leaf-03 перенастроила  как Area3 - Stub-зона.
+
+Настройки:
+```
+SPINE-01(config-router-ospf)#area 3 stub
+SPINE-01(config-router-ospf)#inter eth 3
+SPINE-01(config-if-Et3)#no ip ospf area 0
+SPINE-01(config-if-Et3)#ip ospf area 3
+
+```
+```
+SPINE-02(config)#router ospf 1
+SPINE-02(config-router-ospf)#area 3 stub
+SPINE-02(config-router-ospf)#inter eth 3
+SPINE-02(config-if-Et3)#no ip ospf area 0
+SPINE-02(config-if-Et3)#ip ospf area 3
+SPINE-02(config-if-Et3)#exit
+```
+
+```
+LEAF-03(config)#router ospf 1
+LEAF-03(config-router-ospf)#area 3 stub
+LEAF-03(config)#inter eth 1-2
+LEAF-03(config-if-Et1-2)#
+LEAF-03(config-if-Et1-2)#
+LEAF-03(config-if-Et1-2)#ip ospf are 3
+LEAF-03(config-if-Et1-2)#exit
+LEAF-03(config)#router ospf 3
+! OSPFv2 interface area configuration found in vrfdefault. Multiple OSPFv2 instance config will not be applied.
+LEAF-03(config)#router ospf 1
+LEAF-03(config-router-ospf)#area 3 stub
+LEAF-03(config-router-ospf)#inter loopback 0
+LEAF-03(config-if-Lo0)#ip ospf area 3
+LEAF-03(config-if-Lo0)#
+```
+
+Проверка: 
+```
+LEAF-03#sh ip ospf ne
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:31    172.16.3.2      Ethernet1
+10.0.2.2        1        default  0   FULL                   00:00:34    172.16.3.6      Ethernet2
+LEAF-03#
+
+
+SPINE-01#sh ip ospf nei
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.0.1        1        default  0   FULL                   00:00:32    172.16.1.1      Ethernet1
+10.0.0.2        1        default  1   FULL                   00:00:35    172.16.2.1      Ethernet2
+10.0.0.3        1        default  0   FULL                   00:00:35    172.16.3.1      Ethernet3
+SPINE-01#
+SPINE-01#
+```
+
+```
+
+SPINE-02#sh ip ospf ne
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.0.1        1        default  0   FULL                   00:00:33    172.16.1.5      Ethernet1
+10.0.0.2        1        default  0   FULL                   00:00:33    172.16.2.5      Ethernet2
+10.0.0.3        1        default  0   FULL                   00:00:34    172.16.3.5      Ethernet3
+SPINE-02#
+SPINE-02#
+SPINE-02#sh ip ospf ne 10.0.0.3 det
+Neighbor 10.0.0.3, instance 1, VRF default, interface address 172.16.3.5
+  In area 0.0.0.3 interface Ethernet3
+  Neighbor priority is 0, State is FULL, 6 state changes
+  Adjacency was established 01:05:12 ago
+  Current state was established 01:05:12 ago
+  DR IP Address 0.0.0.0 BDR IP Address 0.0.0.0
+  Options is (null)
+  Dead timer is due in 00:00:33
+  Inactivity timer deferred 0 times
+  LSAs retransmitted 1 time to this neighbor
+  Graceful-restart-helper mode is Inactive
+  Graceful-restart attempts: 0
+SPINE-02#
+SPINE-02#
+SPINE-02#sh ip ospf ?
+  A.B.C.D         OSPF area-id in IP address format
+  access-list     Named access-lists
+  border-routers  Status for border routers
+  counters        OSPF Counters
+  database        LSA database
+  interface       Interface-specific details
+  lsa-log         LSA throttling Log
+  mpls            Show MPLS information
+  neighbor        Protocol neighbor details
+  request         Request list
+  retransmission  Re-transmission list
+  spf-log         SPF Log
+  summary         OSPF Summary
+  vrf             VRF name
+  <0-4294967295>  OSPF area-id in decimal format
+  <1-65535>       Instance ID
+  >               Redirect output to URL
+  >>              Append redirected output to URL
+  |               Command output pipe filters
+  <cr>            
+```
+
+```
+SPINE-02#sh ip ospf summ
+OSPF instance 1 with ID 10.0.2.2, VRF default, ABR
+Time since last SPF: 502 s
+Max LSAs: 12000, Total LSAs: 31
+Type-5 Ext LSAs: 0
+ID               Type   Intf   Nbrs (full) RTR LSA NW LSA  SUM LSA ASBR LSA TYPE-7 LSA
+0.0.0.0          normal 3      2    (2   ) 7       0       24      0       0      
+0.0.0.3          stub   1      1    (1   ) 7       0       24      0       0      
+```
+
+```
+
+SPINE-02#
+LEAF-03#sh ip ospf ne
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:31    172.16.3.2      Ethernet1
+10.0.2.2        1        default  0   FULL                   00:00:34    172.16.3.6      Ethernet2
+LEAF-03#
+LEAF-03#
+LEAF-03#
+LEAF-03#
+LEAF-03#sh ip ospf summ
+OSPF instance 1 with ID 10.0.0.3, VRF default
+Time since last SPF: 4054 s
+Max LSAs: 12000, Total LSAs: 21
+Type-5 Ext LSAs: 0
+ID               Type   Intf   Nbrs (full) RTR LSA NW LSA  SUM LSA ASBR LSA TYPE-7 LSA
+0.0.0.3          stub   3      2    (2   ) 3       0       18      0       0      
+```
