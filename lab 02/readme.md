@@ -488,3 +488,63 @@ Last packet:  Version: 1             - Diagnostic: 0
               Min Echo interval: 200                         
 
 ```
+
+
+### Настройка аутентификации OSPF 
+
+Между интерфейсами Spine-02 ETh3 - Leaf-03 ETh 2 настроена аутентификация: 
+
+```
+SPINE-02(config)#int eth3
+SPINE-02(config-if-Et3)#ip ospf message-digest-key 1 md5 otus
+SPINE-02(config-if-Et3)#ip ospf authentication message-digest 
+SPINE-02(config-if-Et3)#
+
+
+
+LEAF-03(config)#inter eth 2
+LEAF-03(config-if-Et2)#ip ospf message-digest-key 1 md5 otus
+LEAF-03(config-if-Et2)#ip ospf authentication message-digest
+
+
+```
+
+Проверка: 
+
+```
+
+LEAF-03#sh ip ospf ne
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:32    172.16.3.2      Ethernet1
+10.0.2.2        1        default  0   EXCH START             00:00:36    172.16.3.6      Ethernet2
+LEAF-03#sh ip ospf ne
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.1.1        1        default  0   FULL                   00:00:29    172.16.3.2      Ethernet1
+10.0.2.2        1        default  0   FULL                   00:00:38    172.16.3.6      Ethernet2
+LEAF-03#
+LEAF-03#sh ip ospf ne 10.0.2.2 deta
+Neighbor 10.0.2.2, instance 1, VRF default, interface address 172.16.3.6
+  In area 0.0.0.0 interface Ethernet2
+  Neighbor priority is 0, State is FULL, 6 state changes
+  Adjacency was established 00:00:23 ago
+  Current state was established 00:00:23 ago
+  DR IP Address 0.0.0.0 BDR IP Address 0.0.0.0
+  Options is E
+  Dead timer is due in 00:00:30
+  Inactivity timer deferred 0 times
+  LSAs retransmitted 0 times to this neighbor
+  Graceful-restart-helper mode is Inactive
+  Graceful-restart attempts: 0
+LEAF-03#sh ip ospf inter eth 2
+Ethernet2 is up
+  Interface Address 172.16.3.5/30, instance 1, VRF default, Area 0.0.0.0
+  Network Type Point-To-Point, Cost: 10
+  Transmit Delay is 1 sec, State P2P
+  Interface Speed: 1000 mbps
+  No Designated Router on this network
+  No Backup Designated Router on this network
+  Timer intervals configured, Hello 10, Dead 40, Retransmit 5
+  Neighbor Count is 1
+  Message-digest authentication, using key id 1
+  Traffic engineering is disabled
+```
