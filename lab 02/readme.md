@@ -70,11 +70,11 @@ Leaf-03 10.0.0.3/32
 
 |Устройство|Интерфейс|IP-адрес и Маска|Тип подключения|Назначение 
 |---|---|---|---|---|
-SPINE-01|lo0|10.0.0.1/32|Loopback Локальный Router ID
+SPINE-01|lo0|10.0.1.1/32|Loopback Локальный Router ID
 SPINE-01|Eth1|172.16.1.2/30|P2P Линк|LEAF-01 (Eth1)
 SPINE-01|Eth2|172.16.2.2/30|P2P Линк|LEAF-02 (Eth1)
 SPINE-01|Eth3|172.16.3.2/30|P2P Линк|LEAF-03 (Eth1)|
-SPINE-02|lo0|10.0.0.2/32|Loopback Локальный Router ID|
+SPINE-02|lo0|10.0.2.2/32|Loopback Локальный Router ID|
 SPINE-02|Eth1|172.16.1.6/30|P2P Линк|LEAF-01 (Eth2)
 SPINE-02|Eth2|172.16.2.6/30|P2P Линк|LEAF-02 (Eth2)|
 SPINE-02|Eth3|172.16.3.6/30|P2P Линк|LEAF-03 (Eth2)
