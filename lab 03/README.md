@@ -117,3 +117,87 @@ SPINE-01(config-if-Et1-3)#inter lo 0
 SPINE-01(config-if-Lo0)#isis enable UNDERLAY
 ```
 
+
+SPINE-02#conf t
+SPINE-02(config)#router isis UNDERLAY
+SPINE-02(config-router-isis)#address-family ipv4 unicast 
+SPINE-02(config-router-isis-af)#net 49.0001.2222.2222.2222.00
+SPINE-02(config-router-isis)#inter eth1-3
+SPINE-02(config-if-Et1-3)#no mtu
+SPINE-02(config-if-Et1-3)#mtu 9000
+SPINE-02(config-if-Et1-3)#isis enable UNDERLAY
+SPINE-02(config-if-Et1-3)#isis network point-to-point 
+SPINE-02(config-if-Et1-3)#isis circuit-type level-1
+SPINE-02(config-if-Et1-3)#inter lo 0
+SPINE-02(config-if-Lo0)#isis enable UNDERLAY
+SPINE-02(config-if-Lo0)#
+
+EAF-01(config)#router isis UNDERLAY
+LEAF-01(config-router-isis)#address-family ipv4 unicast 
+LEAF-01(config-router-isis-af)#net 49.0001.0001.0001.0001.00
+LEAF-01(config-router-isis)#
+LEAF-01(config-router-isis)#
+LEAF-01(config-router-isis)#inter eth 1-2
+LEAF-01(config-if-Et1-2)#no mtu
+LEAF-01(config-if-Et1-2)#mtu 9000
+LEAF-01(config-if-Et1-2)#isis enable UNDERLAY
+LEAF-01(config-if-Et1-2)#isis network point-to-point 
+LEAF-01(config-if-Et1-2)#isis circuit-type level-1
+LEAF-01(config-if-Et1-2)#inter lo 0
+LEAF-01(config-if-Lo0)#isis enable UNDERLAY
+LEAF-01(config-if-Lo0)#
+LEAF-01(config-if-Lo0)#
+LEAF-01(config-if-Lo0)#exit
+
+
+LEAF-02(config)#router isis UNDERLAY
+LEAF-02(config-router-isis)#address-family ipv4 uni
+LEAF-02(config-router-isis-af)#net 49.0001.0002.0002.0002.00
+LEAF-02(config-router-isis)#inter eth 1-2
+LEAF-02(config-if-Et1-2)#no mtu
+LEAF-02(config-if-Et1-2)#mtu 9000
+LEAF-02(config-if-Et1-2)#isis enable UNDERLAY
+LEAF-02(config-if-Et1-2)#isis network point-to-point 
+LEAF-02(config-if-Et1-2)#isis circuit-type level-1
+LEAF-02(config-if-Et1-2)#inter lo0
+LEAF-02(config-if-Lo0)#isis enable UNDERLAY
+LEAF-02(config-if-Lo0)#
+LEAF-02(config-if-Lo0)#
+LEAF-02(config-if-Lo0)#
+LEAF-02(config-if-Lo0)#exit
+
+
+LEAF-03(config)#router isis UNDERLAY
+LEAF-03(config-router-isis)#address-family ipv4 unicast 
+LEAF-03(config-router-isis-af)#net 49.0001.0003.0003.0003.00
+LEAF-03(config-router-isis)#
+LEAF-03(config-router-isis)#
+LEAF-03(config-router-isis)#inter eth 1-2
+LEAF-03(config-if-Et1-2)#no mtu
+LEAF-03(config-if-Et1-2)#mtu 9000
+LEAF-03(config-if-Et1-2)#isis enable UNDERLAY
+LEAF-03(config-if-Et1-2)#isis network point-to-point 
+LEAF-03(config-if-Et1-2)#isis circuit-type level-1
+LEAF-03(config-if-Et1-2)#inter lo 0
+LEAF-03(config-if-Lo0)#isis enable UNDERLAY
+LEAF-03(config-if-Lo0)#
+
+
+### Проверка связности 
+
+LEAF-03(config)#router isis UNDERLAY
+LEAF-03(config-router-isis)#address-family ipv4 unicast 
+LEAF-03(config-router-isis-af)#net 49.0001.0003.0003.0003.00
+LEAF-03(config-router-isis)#
+LEAF-03(config-router-isis)#
+LEAF-03(config-router-isis)#inter eth 1-2
+LEAF-03(config-if-Et1-2)#no mtu
+LEAF-03(config-if-Et1-2)#mtu 9000
+LEAF-03(config-if-Et1-2)#isis enable UNDERLAY
+LEAF-03(config-if-Et1-2)#isis network point-to-point 
+LEAF-03(config-if-Et1-2)#isis circuit-type level-1
+LEAF-03(config-if-Et1-2)#inter lo 0
+LEAF-03(config-if-Lo0)#isis enable UNDERLAY
+LEAF-03(config-if-Lo0)#
+
+
