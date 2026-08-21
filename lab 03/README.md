@@ -96,6 +96,8 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 
 Настройки на коммутаторах на примере Spine-01: 
 
+```
+
 SPINE-01(config-router-isis-af)#net 49.0001.1111.1111.1111.00
 SPINE-01(config-router-isis)#inter eth 1-3
 SPINE-01(config-if-Et1-3)#no mtu 
@@ -113,3 +115,5 @@ SPINE-01(config-if-Et1-3)#isis circuit-type ?
 SPINE-01(config-if-Et1-3)#isis circuit-type level-1
 SPINE-01(config-if-Et1-3)#inter lo 0
 SPINE-01(config-if-Lo0)#isis enable UNDERLAY
+```
+
