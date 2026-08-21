@@ -167,5 +167,210 @@ LEAF-03(config-if-Lo0)#isis enable UNDERLAY
 
 ### Проверка связности 
 
+SPINE-01#sh isis neighbors 
+ 
+Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
+UNDERLAY  default  LEAF-01          L1   Ethernet1          P2P               UP    29          0E                  
+UNDERLAY  default  LEAF-02          L1   Ethernet2          P2P               UP    29          0E                  
+UNDERLAY  default  LEAF-03          L1   Ethernet3          P2P               UP    28          0E                  
+SPINE-01#sh isis database 
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                 8  53742   813    123 L2 <>
+    LEAF-02.00-00                 8  46846   954    123 L2 <>
+    LEAF-03.00-00                 8  39695  1096    123 L2 <>
+    SPINE-01.00-00               12   3131  1093    148 L2 <>
+    SPINE-02.00-00               12  35383  1088    148 L2 <>
+  IS-IS Level 2 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    SPINE-01.00-00               14   5427  1097    166 L2 <>
+SPINE-01#
+SPINE-01#
+SPINE-01#
+
+SPINE-02#sh isis nei
+ 
+Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
+UNDERLAY  default  LEAF-01          L1   Ethernet1          P2P               UP    21          0F                  
+UNDERLAY  default  LEAF-02          L1   Ethernet2          P2P               UP    21          0F                  
+UNDERLAY  default  LEAF-03          L1   Ethernet3          P2P               UP    29          0F                  
+SPINE-02#
+SPINE-02#
+SPINE-02#sh isis data
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                16  49654   825    123 L2 <>
+    LEAF-02.00-00                16  42503  1161    123 L2 <>
+    LEAF-03.00-00                16  35607  1124    123 L2 <>
+    SPINE-01.00-00               21  63812  1139    148 L2 <>
+    SPINE-02.00-00               20  31295   535    148 L2 <>
+  IS-IS Level 2 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    SPINE-02.00-00               21  55365   693    157 L2 <>
+SPINE-02#
+
+LEAF-01(config)#sh isis data
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                16  49654   910    123 L2 <>
+    LEAF-02.00-00                15  43014   369    123 L2 <>
+    LEAF-03.00-00                15  36118   358    123 L2 <>
+    SPINE-01.00-00               20  64323   472    148 L2 <>
+    SPINE-02.00-00               20  31295   621    148 L2 <>
+  IS-IS Level 2 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                15  21421  1036    165 L2 <>
+LEAF-01(config)#
+LEAF-01(config)#
+LEAF-01(config)#
+LEAF-01(config)#
+LEAF-01(config)#sh isis nei
+ 
+Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
+UNDERLAY  default  SPINE-01         L1   Ethernet1          P2P               UP    30          0E                  
+UNDERLAY  default  SPINE-02         L1   Ethernet2          P2P               UP    30          0E                  
+LEAF-01(config)#
+
+
+SPINE-02#
+SPINE-02#
+SPINE-02#sh isis nei
+ 
+Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
+UNDERLAY  default  LEAF-01          L1   Ethernet1          P2P               UP    21          0F                  
+UNDERLAY  default  LEAF-02          L1   Ethernet2          P2P               UP    21          0F                  
+UNDERLAY  default  LEAF-03          L1   Ethernet3          P2P               UP    29          0F                  
+SPINE-02#
+SPINE-02#
+SPINE-02#sh isis data
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                16  49654   825    123 L2 <>
+    LEAF-02.00-00                16  42503  1161    123 L2 <>
+    LEAF-03.00-00                16  35607  1124    123 L2 <>
+    SPINE-01.00-00               21  63812  1139    148 L2 <>
+    SPINE-02.00-00               20  31295   535    148 L2 <>
+  IS-IS Level 2 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    SPINE-02.00-00               21  55365   693    157 L2 <>
+
+    
+
+
+LEAF-03#sh isis data
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                 8  53742  1099    123 L2 <>
+    LEAF-02.00-00                 8  46846  1099    123 L2 <>
+    LEAF-03.00-00                 8  39695  1118    123 L2 <>
+    SPINE-01.00-00               12   3131  1115    148 L2 <>
+    SPINE-02.00-00               12  35383  1110    148 L2 <>
+  IS-IS Level 2 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-03.00-00                 9  63745  1118    165 L2 <>
+LEAF-03#
+
+
+
+
+
+LEAF-03#sh isis nei
+ 
+Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
+UNDERLAY  default  SPINE-01         L1   Ethernet1          P2P               UP    28          10                  
+UNDERLAY  default  SPINE-02         L1   Ethernet2          P2P               UP    25          10                  
+LEAF-03#
+LEAF-03#ping 10.0.0.1
+PING 10.0.0.1 (10.0.0.1) 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=63 time=44.7 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=63 time=37.3 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=63 time=30.9 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=63 time=30.6 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=63 time=22.5 ms
+
+--- 10.0.0.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 86ms
+rtt min/avg/max/mdev = 22.559/33.260/44.788/7.439 ms, pipe 4, ipg/ewma 21.516/38.515 ms
+LEAF-03#ping 10.0.0.2
+PING 10.0.0.2 (10.0.0.2) 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=63 time=25.1 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=63 time=24.8 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=63 time=20.2 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=63 time=19.9 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=63 time=23.6 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 88ms
+rtt min/avg/max/mdev = 19.926/22.772/25.153/2.249 ms, pipe 2, ipg/ewma 22.026/23.902 ms
+LEAF-03#ping 10.0.1.1
+PING 10.0.1.1 (10.0.1.1) 72(100) bytes of data.
+80 bytes from 10.0.1.1: icmp_seq=1 ttl=64 time=14.3 ms
+80 bytes from 10.0.1.1: icmp_seq=2 ttl=64 time=9.11 ms
+80 bytes from 10.0.1.1: icmp_seq=3 ttl=64 time=8.39 ms
+80 bytes from 10.0.1.1: icmp_seq=4 ttl=64 time=7.10 ms
+80 bytes from 10.0.1.1: icmp_seq=5 ttl=64 time=7.78 ms
+
+--- 10.0.1.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 52ms
+rtt min/avg/max/mdev = 7.105/9.339/14.309/2.574 ms, pipe 2, ipg/ewma 13.209/11.703 ms
+LEAF-03#ping 10.0.1.2
+connect: Network is unreachable
+LEAF-03#ping 10.0.2.2
+PING 10.0.2.2 (10.0.2.2) 72(100) bytes of data.
+80 bytes from 10.0.2.2: icmp_seq=1 ttl=64 time=13.7 ms
+80 bytes from 10.0.2.2: icmp_seq=2 ttl=64 time=10.5 ms
+80 bytes from 10.0.2.2: icmp_seq=3 ttl=64 time=10.0 ms
+80 bytes from 10.0.2.2: icmp_seq=4 ttl=64 time=9.05 ms
+80 bytes from 10.0.2.2: icmp_seq=5 ttl=64 time=11.2 ms
+
+--- 10.0.2.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 59ms
+rtt min/avg/max/mdev = 9.053/10.904/13.704/1.564 ms, ipg/ewma 14.879/12.265 ms
+LEAF-03#sh isis ?
+  NAME                     Name of the IS-IS protocol instance
+  area                     Area information
+  counters                 Show IS-IS Packet counters, Drop counters and System
+                           counters
+  database                 Database information
+  dynamic                  Dynamic flooding information
+  flex-algo                Flexible algorithm
+  graceful-restart         Graceful Restart information
+  hostname                 System ID to hostname mapping
+  interface                IS-IS interface status
+  local-convergence-delay  Micro-loop local convergence delay information
+  lsp                      IS-IS LSP information
+  mpls                     Show MPLS information
+  neighbors                Protocol neighbor details
+  network                  IS-IS network information
+  segment-routing          Segment routing information
+  spf                      IS-IS SPF Information
+  summary                  Get summary information for IS-IS
+  summary-address          Summary route configuration
+  ti-lfa                   TI-LFA related path information
+
+LEAF-03#sh isis data
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-01.00-00                 8  53742  1099    123 L2 <>
+    LEAF-02.00-00                 8  46846  1099    123 L2 <>
+    LEAF-03.00-00                 8  39695  1118    123 L2 <>
+    SPINE-01.00-00               12   3131  1115    148 L2 <>
+    SPINE-02.00-00               12  35383  1110    148 L2 <>
+  IS-IS Level 2 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS Flags
+    LEAF-03.00-00                 9  63745  1118    165 L2 <>
+LEAF-03#
 
 
