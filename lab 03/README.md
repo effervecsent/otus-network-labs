@@ -109,6 +109,7 @@ SPINE-01(config-if-Et1-3)#inter lo 0
 SPINE-01(config-if-Lo0)#isis enable UNDERLAY
 ```
 
+```
 
 SPINE-02#conf t
 SPINE-02(config)#router isis UNDERLAY
@@ -122,9 +123,11 @@ SPINE-02(config-if-Et1-3)#isis network point-to-point
 SPINE-02(config-if-Et1-3)#isis circuit-type level-1
 SPINE-02(config-if-Et1-3)#inter lo 0
 SPINE-02(config-if-Lo0)#isis enable UNDERLAY
+```
 
+```
 
-EAF-01(config)#router isis UNDERLAY
+LEAF-01(config)#router isis UNDERLAY
 LEAF-01(config-router-isis)#address-family ipv4 unicast 
 LEAF-01(config-router-isis-af)#net 49.0001.0001.0001.0001.00
 LEAF-01(config-router-isis)#inter eth 1-2
@@ -135,8 +138,10 @@ LEAF-01(config-if-Et1-2)#isis network point-to-point
 LEAF-01(config-if-Et1-2)#isis circuit-type level-1
 LEAF-01(config-if-Et1-2)#inter lo 0
 LEAF-01(config-if-Lo0)#isis enable UNDERLAY
+```
 
 
+```
 
 LEAF-02(config)#router isis UNDERLAY
 LEAF-02(config-router-isis)#address-family ipv4 uni
@@ -149,8 +154,10 @@ LEAF-02(config-if-Et1-2)#isis network point-to-point
 LEAF-02(config-if-Et1-2)#isis circuit-type level-1
 LEAF-02(config-if-Et1-2)#inter lo0
 LEAF-02(config-if-Lo0)#isis enable UNDERLAY
+```
 
 
+```
 
 LEAF-03(config)#router isis UNDERLAY
 LEAF-03(config-router-isis)#address-family ipv4 unicast 
@@ -163,12 +170,14 @@ LEAF-03(config-if-Et1-2)#isis network point-to-point
 LEAF-03(config-if-Et1-2)#isis circuit-type level-1
 LEAF-03(config-if-Et1-2)#inter lo 0
 LEAF-03(config-if-Lo0)#isis enable UNDERLAY
+```
 
 
 ### Проверка связности 
 
-SPINE-01#sh isis neighbors 
- 
+```
+
+SPINE-01#sh isis neighbors  
 Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
 UNDERLAY  default  LEAF-01          L1   Ethernet1          P2P               UP    29          0E                  
 UNDERLAY  default  LEAF-02          L1   Ethernet2          P2P               UP    29          0E                  
@@ -186,9 +195,9 @@ IS-IS Instance: UNDERLAY VRF: default
   IS-IS Level 2 Link State Database
     LSPID                   Seq Num  Cksum  Life Length IS Flags
     SPINE-01.00-00               14   5427  1097    166 L2 <>
-SPINE-01#
-SPINE-01#
-SPINE-01#
+```
+
+```
 
 SPINE-02#sh isis nei
  
@@ -212,6 +221,10 @@ IS-IS Instance: UNDERLAY VRF: default
     LSPID                   Seq Num  Cksum  Life Length IS Flags
     SPINE-02.00-00               21  55365   693    157 L2 <>
 SPINE-02#
+```
+
+
+```
 
 LEAF-01(config)#sh isis data
 
@@ -236,10 +249,11 @@ Instance  VRF      System Id        Type Interface          SNPA              St
 UNDERLAY  default  SPINE-01         L1   Ethernet1          P2P               UP    30          0E                  
 UNDERLAY  default  SPINE-02         L1   Ethernet2          P2P               UP    30          0E                  
 LEAF-01(config)#
+```
 
 
-SPINE-02#
-SPINE-02#
+```
+
 SPINE-02#sh isis nei
  
 Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
@@ -262,8 +276,10 @@ IS-IS Instance: UNDERLAY VRF: default
     LSPID                   Seq Num  Cksum  Life Length IS Flags
     SPINE-02.00-00               21  55365   693    157 L2 <>
 
-    
+  ```
+  
 
+```
 
 LEAF-03#sh isis data
 
@@ -278,18 +294,21 @@ IS-IS Instance: UNDERLAY VRF: default
   IS-IS Level 2 Link State Database
     LSPID                   Seq Num  Cksum  Life Length IS Flags
     LEAF-03.00-00                 9  63745  1118    165 L2 <>
-LEAF-03#
-
-
-
 
 
 LEAF-03#sh isis nei
  
 Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
 UNDERLAY  default  SPINE-01         L1   Ethernet1          P2P               UP    28          10                  
-UNDERLAY  default  SPINE-02         L1   Ethernet2          P2P               UP    25          10                  
-LEAF-03#
+UNDERLAY  default  SPINE-02         L1   Ethernet2          P2P               UP    25          10
+
+```
+
+
+            
+c Leaf-03 есть пинг до всех loopback-адресов: 
+```
+
 LEAF-03#ping 10.0.0.1
 PING 10.0.0.1 (10.0.0.1) 72(100) bytes of data.
 80 bytes from 10.0.0.1: icmp_seq=1 ttl=63 time=44.7 ms
@@ -336,41 +355,8 @@ PING 10.0.2.2 (10.0.2.2) 72(100) bytes of data.
 --- 10.0.2.2 ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 59ms
 rtt min/avg/max/mdev = 9.053/10.904/13.704/1.564 ms, ipg/ewma 14.879/12.265 ms
-LEAF-03#sh isis ?
-  NAME                     Name of the IS-IS protocol instance
-  area                     Area information
-  counters                 Show IS-IS Packet counters, Drop counters and System
-                           counters
-  database                 Database information
-  dynamic                  Dynamic flooding information
-  flex-algo                Flexible algorithm
-  graceful-restart         Graceful Restart information
-  hostname                 System ID to hostname mapping
-  interface                IS-IS interface status
-  local-convergence-delay  Micro-loop local convergence delay information
-  lsp                      IS-IS LSP information
-  mpls                     Show MPLS information
-  neighbors                Protocol neighbor details
-  network                  IS-IS network information
-  segment-routing          Segment routing information
-  spf                      IS-IS SPF Information
-  summary                  Get summary information for IS-IS
-  summary-address          Summary route configuration
-  ti-lfa                   TI-LFA related path information
 
-LEAF-03#sh isis data
+```
 
-IS-IS Instance: UNDERLAY VRF: default
-  IS-IS Level 1 Link State Database
-    LSPID                   Seq Num  Cksum  Life Length IS Flags
-    LEAF-01.00-00                 8  53742  1099    123 L2 <>
-    LEAF-02.00-00                 8  46846  1099    123 L2 <>
-    LEAF-03.00-00                 8  39695  1118    123 L2 <>
-    SPINE-01.00-00               12   3131  1115    148 L2 <>
-    SPINE-02.00-00               12  35383  1110    148 L2 <>
-  IS-IS Level 2 Link State Database
-    LSPID                   Seq Num  Cksum  Life Length IS Flags
-    LEAF-03.00-00                 9  63745  1118    165 L2 <>
-LEAF-03#
 
 
