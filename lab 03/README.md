@@ -94,7 +94,7 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 Все коммутаторы находятся в зоне Area 0.
 
 
-Настройки на коммутаторах на примере Spine-01: 
+Настройки на коммутаторах: 
 
 ```
 
@@ -102,16 +102,8 @@ SPINE-01(config-router-isis-af)#net 49.0001.1111.1111.1111.00
 SPINE-01(config-router-isis)#inter eth 1-3
 SPINE-01(config-if-Et1-3)#no mtu 
 SPINE-01(config-if-Et1-3)#mtu 9000
-SPINE-01(config-if-Et1-3)#isis enable ?
-  WORD  Name of the IS-IS protocol instance
-
 SPINE-01(config-if-Et1-3)#isis enable UNDERLAY
 SPINE-01(config-if-Et1-3)#isis network point-to-point 
-SPINE-01(config-if-Et1-3)#isis circuit-type ?
-  level-1    Configure at level 1
-  level-1-2  Configure at level-1-2
-  level-2    Configure at level 2
-
 SPINE-01(config-if-Et1-3)#isis circuit-type level-1
 SPINE-01(config-if-Et1-3)#inter lo 0
 SPINE-01(config-if-Lo0)#isis enable UNDERLAY
@@ -130,13 +122,11 @@ SPINE-02(config-if-Et1-3)#isis network point-to-point
 SPINE-02(config-if-Et1-3)#isis circuit-type level-1
 SPINE-02(config-if-Et1-3)#inter lo 0
 SPINE-02(config-if-Lo0)#isis enable UNDERLAY
-SPINE-02(config-if-Lo0)#
+
 
 EAF-01(config)#router isis UNDERLAY
 LEAF-01(config-router-isis)#address-family ipv4 unicast 
 LEAF-01(config-router-isis-af)#net 49.0001.0001.0001.0001.00
-LEAF-01(config-router-isis)#
-LEAF-01(config-router-isis)#
 LEAF-01(config-router-isis)#inter eth 1-2
 LEAF-01(config-if-Et1-2)#no mtu
 LEAF-01(config-if-Et1-2)#mtu 9000
@@ -145,9 +135,7 @@ LEAF-01(config-if-Et1-2)#isis network point-to-point
 LEAF-01(config-if-Et1-2)#isis circuit-type level-1
 LEAF-01(config-if-Et1-2)#inter lo 0
 LEAF-01(config-if-Lo0)#isis enable UNDERLAY
-LEAF-01(config-if-Lo0)#
-LEAF-01(config-if-Lo0)#
-LEAF-01(config-if-Lo0)#exit
+
 
 
 LEAF-02(config)#router isis UNDERLAY
@@ -161,17 +149,12 @@ LEAF-02(config-if-Et1-2)#isis network point-to-point
 LEAF-02(config-if-Et1-2)#isis circuit-type level-1
 LEAF-02(config-if-Et1-2)#inter lo0
 LEAF-02(config-if-Lo0)#isis enable UNDERLAY
-LEAF-02(config-if-Lo0)#
-LEAF-02(config-if-Lo0)#
-LEAF-02(config-if-Lo0)#
-LEAF-02(config-if-Lo0)#exit
+
 
 
 LEAF-03(config)#router isis UNDERLAY
 LEAF-03(config-router-isis)#address-family ipv4 unicast 
 LEAF-03(config-router-isis-af)#net 49.0001.0003.0003.0003.00
-LEAF-03(config-router-isis)#
-LEAF-03(config-router-isis)#
 LEAF-03(config-router-isis)#inter eth 1-2
 LEAF-03(config-if-Et1-2)#no mtu
 LEAF-03(config-if-Et1-2)#mtu 9000
@@ -180,24 +163,9 @@ LEAF-03(config-if-Et1-2)#isis network point-to-point
 LEAF-03(config-if-Et1-2)#isis circuit-type level-1
 LEAF-03(config-if-Et1-2)#inter lo 0
 LEAF-03(config-if-Lo0)#isis enable UNDERLAY
-LEAF-03(config-if-Lo0)#
 
 
 ### Проверка связности 
 
-LEAF-03(config)#router isis UNDERLAY
-LEAF-03(config-router-isis)#address-family ipv4 unicast 
-LEAF-03(config-router-isis-af)#net 49.0001.0003.0003.0003.00
-LEAF-03(config-router-isis)#
-LEAF-03(config-router-isis)#
-LEAF-03(config-router-isis)#inter eth 1-2
-LEAF-03(config-if-Et1-2)#no mtu
-LEAF-03(config-if-Et1-2)#mtu 9000
-LEAF-03(config-if-Et1-2)#isis enable UNDERLAY
-LEAF-03(config-if-Et1-2)#isis network point-to-point 
-LEAF-03(config-if-Et1-2)#isis circuit-type level-1
-LEAF-03(config-if-Et1-2)#inter lo 0
-LEAF-03(config-if-Lo0)#isis enable UNDERLAY
-LEAF-03(config-if-Lo0)#
 
 
