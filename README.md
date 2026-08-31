@@ -104,11 +104,83 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 Spine-коммутаторы находятся в одной автономной системе 65000. 
 Настройка: 
 
+```
+SPINE-01#
 router bgp 65000
    router-id 10.0.1.1
-   maximum-paths 4
+   address-family ipv4 
+   maximum-paths 4 (Включаем режим ECMP  и разрешаем устанавливать до 4 параллельных маршрутов с одинаковой стоимостью). 
    neighbor 172.16.1.1 remote-as 65001
    neighbor 172.16.2.1 remote-as 65002
    neighbor 172.16.3.1 remote-as 65003
+```
 
-Настройки на коммутаторах на примере Spine-01: 
+```
+SPINE-02#
+router bgp 65000
+   router-id 10.0.2.2
+   address-family ipv4 
+   maximum-paths 4
+   neighbor 172.16.1.5 remote-as 65001
+   neighbor 172.16.2.5 remote-as 65002
+   neighbor 172.16.3.5 remote-as 65003
+```
+Проверка соседей: 
+
+```
+SPINE-01#sh ip bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.1.1, local AS number 65000
+Neighbor Status Codes: m - Under maintenance
+  Neighbor   V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
+  172.16.1.1 4 65001           1620      1628    0    0 04:55:26 Estab   1      1
+  172.16.2.1 4 65002           1627      1620    0    0 04:54:29 Estab   1      1
+  172.16.3.1 4 65003           1628      1625    0    0 04:55:16 Estab   0      0
+SPINE-01#
+```
+
+```
+SPINE-02#sh ip bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.2.2, local AS number 65000
+Neighbor Status Codes: m - Under maintenance
+  Neighbor   V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
+  172.16.1.5 4 65001           1612      1608    0    0 04:53:46 Estab   1      1
+  172.16.2.5 4 65002           1613      1609    0    0 04:53:12 Estab   1      1
+  172.16.3.5 4 65003           1614      1611    0    0 04:53:46 Estab   0      0
+SPINE-02#
+```
+
+
+Конфигурация на leaf-02: 
+Cеть на loopback анонсировала через редистрибуцию и route-map. 
+Использовала set origin incomplete, потому что на arista он сам не применяется. 
+Включила community
+
+```
+!
+route-map RM_red_conn permit 10
+   match interface Loopback0
+   set community 65001:100 65002:200 additive
+   set origin incomplete
+!
+router bgp 65002
+   router-id 10.0.0.2
+   address-family ipv4
+   maximum-paths 4
+   neighbor 172.16.2.2 remote-as 65000
+   neighbor 172.16.2.2 send-community standard extended
+   neighbor 172.16.2.6 send-community standard extended
+   redistribute connected route-map RM_red_conn
+```
+
+
+router bgp 65001
+   router-id 10.0.0.1
+   maximum-paths 4
+   neighbor 172.16.1.2 remote-as 65000
+   neighbor 172.16.1.2 send-community standard extended
+   neighbor 172.16.1.6 remote-as 65000
+   neighbor 172.16.1.6 send-community standard extended
+   network 10.0.0.1/32
+```
