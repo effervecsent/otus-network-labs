@@ -184,3 +184,138 @@ router bgp 65001
    neighbor 172.16.1.6 send-community standard extended
    network 10.0.0.1/32
 ```
+
+Community c leaf-02 видно на spine:
+```
+SPINE-01#
+SPINE-01#
+SPINE-01#sh ip bgp 10.0.0.2/32 
+BGP routing table information for VRF default
+Router identifier 10.0.1.1, local AS number 65000
+BGP routing table entry for 10.0.0.2/32
+ Paths: 1 available
+  65002
+    172.16.2.1 from 172.16.2.1 (10.0.0.2)
+      Origin INCOMPLETE, metric 0, localpref 100, IGP metric 0, weight 0, tag 0
+      Received 00:09:03 ago, valid, external, best
+      Community: 65001:100 65002:200
+      Rx SAFI: Unicast
+```
+```
+SPINE-02#sh ip bgp 10.0.0.2/32 
+BGP routing table information for VRF default
+Router identifier 10.0.2.2, local AS number 65000
+BGP routing table entry for 10.0.0.2/32
+ Paths: 1 available
+  65002
+    172.16.2.5 from 172.16.2.5 (10.0.0.2)
+      Origin INCOMPLETE, metric 0, localpref 100, IGP metric 0, weight 0, tag 0
+      Received 00:10:44 ago, valid, external, best
+      Community: 65001:100 65002:200
+      Rx SAFI: Unicast
+SPINE-02#
+```
+
+Создала community list и поменяла значение local pref для управления входящим трафиком:
+
+
+
+
+На leaf-01 leaf-03 loopback-сеть анонсирована через команду network:
+
+
+```
+LEAF-01#  
+ router bgp 65001
+   router-id 10.0.0.1
+   maximum-paths 4
+   neighbor 172.16.1.2 remote-as 65000
+   neighbor 172.16.1.2 send-community standard extended
+   neighbor 172.16.1.6 remote-as 65000
+   neighbor 172.16.1.6 send-community standard extended
+   network 10.0.0.1/32
+```
+
+```
+LEAF-03#sh run sec bgp
+logging level BGP errors
+router bgp 65003
+   router-id 10.0.0.3
+   maximum-paths 4
+   neighbor 172.16.3.2 remote-as 65000
+   neighbor 172.16.3.2 send-community standard extended
+   neighbor 172.16.3.6 remote-as 65000
+   neighbor 172.16.3.6 send-community standard extended
+   network 10.0.0.3/32
+LEAF-03#
+
+```
+
+Проверка:
+
+```
+LEAF-01#sh ip bgp
+BGP routing table information for VRF default
+Router identifier 10.0.0.1, local AS number 65001
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+                    % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >      10.0.0.1/32            -                     -       -          -       0       i
+ * >Ec    10.0.0.2/32            172.16.1.2            0       -          100     0       65000 65002 ?
+ *  ec    10.0.0.2/32            172.16.1.6            0       -          100     0       65000 65002 ?
+ * >Ec    10.0.0.3/32            172.16.1.2            0       -          100     0       65000 65003 i
+ *  ec    10.0.0.3/32            172.16.1.6            0       -          100     0       65000 65003 i
+LEAF-01#
+```
+
+
+```
+end
+LEAF-02#sh ip bgp 
+BGP routing table information for VRF default
+Router identifier 10.0.0.2, local AS number 65002
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+                    % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >Ec    10.0.0.1/32            172.16.2.2            0       -          100     0       65000 65001 i
+ *  ec    10.0.0.1/32            172.16.2.6            0       -          100     0       65000 65001 i
+ * >      10.0.0.2/32            -                     -       -          -       0       ?
+ * >Ec    10.0.0.3/32            172.16.2.2            0       -          100     0       65000 65003 i
+ *  ec    10.0.0.3/32            172.16.2.6            0       -          100     0       65000 65003 i
+LEAF-02#
+
+```
+
+
+```
+   network 10.0.0.3/32
+LEAF-03#sh ip bgp
+BGP routing table information for VRF default
+Router identifier 10.0.0.3, local AS number 65003
+Route status codes: s - suppressed contributor, * - valid, > - active, E - ECMP head, e - ECMP
+                    S - Stale, c - Contributing to ECMP, b - backup, L - labeled-unicast
+                    % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+RPKI Origin Validation codes: V - valid, I - invalid, U - unknown
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  AIGP       LocPref Weight  Path
+ * >Ec    10.0.0.1/32            172.16.3.2            0       -          100     0       65000 65001 i
+ *  ec    10.0.0.1/32            172.16.3.6            0       -          100     0       65000 65001 i
+ * >Ec    10.0.0.2/32            172.16.3.2            0       -          100     0       65000 65002 ?
+ *  ec    10.0.0.2/32            172.16.3.6            0       -          100     0       65000 65002 ?
+ * >      10.0.0.3/32            -                     -       -          -       0       i
+LEAF-03#  
+
+```
+
