@@ -219,7 +219,46 @@ SPINE-02#
 Создала community list и поменяла значение local pref для управления входящим трафиком:
 
 
+```
+route-map RM_CL_65002 permit 10
+   match community CL_65002
+   set local-preference 10
+!
+route-map RM_CL_65002 permit 20
+!
+router bgp 65003
+   router-id 10.0.0.3
+   maximum-paths 4
+   neighbor 172.16.3.2 remote-as 65000
+   neighbor 172.16.3.2 route-map RM_CL_65002 in
+   neighbor 172.16.3.2 send-community standard extended
+   neighbor 172.16.3.6 remote-as 65000
+   neighbor 172.16.3.6 send-community standard extended
+   network 10.0.0.3/32
+!
+end
+```
 
+Теперь  префикс со spine-01 с local pref всего 10:
+```
+LEAF-03#sh ip bgp 10.0.0.2/32
+BGP routing table information for VRF default
+Router identifier 10.0.0.3, local AS number 65003
+BGP routing table entry for 10.0.0.2/32
+ Paths: 2 available
+  65000 65002
+    172.16.3.6 from 172.16.3.6 (10.0.2.2)
+      Origin INCOMPLETE, metric 0, localpref 100, IGP metric 0, weight 0, tag 0
+      Received 00:10:44 ago, valid, external, best
+      Rx SAFI: Unicast
+  65000 65002
+    172.16.3.2 from 172.16.3.2 (10.0.1.1)
+      Origin INCOMPLETE, metric 0, localpref 10, IGP metric 0, weight 0, tag 0
+      Received 00:02:34 ago, valid, external
+      Community: 65001:100 65002:200
+      Rx SAFI: Unicast
+LEAF-03#
+```
 
 На leaf-01 leaf-03 loopback-сеть анонсирована через команду network:
 
