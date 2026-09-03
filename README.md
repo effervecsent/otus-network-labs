@@ -175,6 +175,7 @@ router bgp 65002
 ```
 
 
+```
 router bgp 65001
    router-id 10.0.0.1
    maximum-paths 4
