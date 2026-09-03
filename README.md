@@ -359,3 +359,153 @@ LEAF-03#
 
 ```
 
+### Настройка bfd и его проверка на всех устройствах: 
+
+
+```
+router bgp 65001
+   maximum-paths 4
+   neighbor 172.16.1.1 bfd
+   neighbor 172.16.1.1 route-map RM_CL_65002 in
+   neighbor 172.16.1.2 remote-as 65000
+   neighbor 172.16.1.2 bfd
+   neighbor 172.16.1.2 send-community standard extended
+   neighbor 172.16.1.6 remote-as 65000
+   neighbor 172.16.1.6 bfd
+   neighbor 172.16.1.6 send-community standard extended
+   network 10.0.0.1/32
+!
+end
+LEAF-01#show bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+---------- ----------- ----------- -------------------- ------- ---------------
+172.16.1.2 3489880817   300166115        Ethernet1(14)  normal  09/02/26 20:58 
+172.16.1.6 3786475106  3002683961        Ethernet2(15)  normal  09/02/26 20:58 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+
+LEAF-01#
+
+```
+
+```
+
+SPINE-01#sh run | section bgp
+router bgp 65000
+   router-id 10.0.1.1
+   maximum-paths 4
+   neighbor 172.16.1.1 remote-as 65001
+   neighbor 172.16.1.1 bfd
+   neighbor 172.16.2.1 remote-as 65002
+   neighbor 172.16.2.1 bfd
+   neighbor 172.16.3.1 remote-as 65003
+   neighbor 172.16.3.1 bfd
+   neighbor 172.16.3.1 send-community standard extended
+SPINE-01#sh bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+---------- ----------- ----------- -------------------- ------- ---------------
+172.16.1.1  300166115  3489880817        Ethernet1(14)  normal  09/02/26 20:58 
+172.16.2.1 4079982080  4009147190        Ethernet2(15)  normal  09/03/26 19:53 
+172.16.3.1 3876908631  3829982205        Ethernet3(16)  normal  09/02/26 21:00 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+```
+
+```
+LEAF-02(config)#router bgp 65002
+LEAF-02(config-router-bgp)#neighbor 172.16.2.2 bfd
+LEAF-02(config-router-bgp)#neighbor 172.16.2.6 bfd
+LEAF-02(config-router-bgp)#exit
+LEAF-02(config)#
+LEAF-02(config)#exit
+LEAF-02#
+LEAF-02#clear ip bgp
+! Peerings for all neighbors were hard reset
+LEAF-02#
+LEAF-02#
+LEAF-02#sh bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+---------- ----------- ----------- -------------------- ------- ---------------
+172.16.2.2 4009147190  4079982080        Ethernet1(14)  normal  09/03/26 19:53 
+172.16.2.6  556567343  1328777282        Ethernet2(15)  normal  09/03/26 19:53 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+
+```
+
+```
+router bgp 65003
+   router-id 10.0.0.3
+   maximum-paths 4
+   neighbor 172.16.2.2 bfd
+   neighbor 172.16.3.2 remote-as 65000
+   neighbor 172.16.3.2 bfd
+   neighbor 172.16.3.2 route-map RM_CL_65002 in
+   neighbor 172.16.3.2 send-community standard extended
+   neighbor 172.16.3.6 remote-as 65000
+   neighbor 172.16.3.6 bfd
+   neighbor 172.16.3.6 send-community standard extended
+   network 10.0.0.3/32
+LEAF-03#sh bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+---------- ----------- ----------- -------------------- ------- ---------------
+172.16.3.2 3829982205  3876908631        Ethernet1(15)  normal  09/02/26 21:00 
+172.16.3.6 3577107039  3449176650        Ethernet2(16)  normal  09/02/26 21:00 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+
+LEAF-03#
+
+```
+
+
+```
+SPINE-02#sh run | sec bgp
+router bgp 65000
+   router-id 10.0.2.2
+   maximum-paths 4
+   neighbor 172.16.1.5 remote-as 65001
+   neighbor 172.16.1.5 bfd
+   neighbor 172.16.2.5 remote-as 65002
+   neighbor 172.16.2.5 bfd
+   neighbor 172.16.3.5 remote-as 65003
+   neighbor 172.16.3.5 bfd
+SPINE-02#sh bfd peers
+VRF name: default
+-----------------
+DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp 
+---------- ----------- ----------- -------------------- ------- ---------------
+172.16.1.5 3002683961  3786475106        Ethernet1(14)  normal  09/02/26 20:58 
+172.16.2.5 1328777282   556567343        Ethernet2(15)  normal  09/03/26 19:53 
+172.16.3.5 3449176650  3577107039        Ethernet3(16)  normal  09/02/26 21:00 
+
+   LastDown            LastDiag    State
+-------------- ------------------- -----
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+         NA       No Diagnostic       Up
+
+SPINE-02#
+
+```
