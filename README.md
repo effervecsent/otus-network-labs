@@ -758,3 +758,74 @@ rtt min/avg/max/mdev = 16.235/19.091/21.524/1.713 ms, pipe 2, ipg/ewma 21.248/20
 LEAF-01#
 
 ```
+
+###Выводы bgp summary со всех устройств: 
+
+
+```
+LEAF-01#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.0.1, local AS number 65001
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+172.16.1.2       65000 Established   IPv4 Unicast            Negotiated              3          3
+172.16.1.6       65000 Established   IPv4 Unicast            Negotiated              3          3
+LEAF-01#
+LEAF-01#
+
+
+```
+
+
+
+```
+LEAF-02#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.0.2, local AS number 65002
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+172.16.2.2       65000 Established   IPv4 Unicast            Negotiated              3          3
+172.16.2.6       65000 Established   IPv4 Unicast            Negotiated              3          3
+LEAF-02#
+
+
+
+```
+
+```
+LEAF-03#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.0.3, local AS number 65003
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+172.16.3.2       65000 Established   IPv4 Unicast            Negotiated              3          3
+172.16.3.6       65000 Established   IPv4 Unicast            Negotiated              3          3
+LEAF-03#
+
+```
+
+```
+SPINE-02#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.2.2, local AS number 65000
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+172.16.1.5       65001 Established   IPv4 Unicast            Negotiated              1          1
+172.16.2.5       65002 Established   IPv4 Unicast            Negotiated              1          1
+172.16.3.5       65003 Established   IPv4 Unicast            Negotiated              1          1
+
+```
+
+```
+SPINE-01#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.1.1, local AS number 65000
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+172.16.1.1       65001 Established   IPv4 Unicast            Negotiated              1          1
+172.16.2.1       65002 Established   IPv4 Unicast            Negotiated              1          1
+172.16.3.1       65003 Established   IPv4 Unicast            Negotiated              1          1
+SPINE-01#
+SPINE-01#
+SPINE-01#
+```
