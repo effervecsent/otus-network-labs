@@ -497,3 +497,44 @@ Vxlan1 is up, line protocol is up (connected)
 LEAF-03#
 
 
+### Проверка BGP EVPN Routing Table
+
+
+
+
+SPINE-01#
+SPINE-01#
+SPINE-01#sh bgp evpn route-type mac-ip
+BGP routing table information for VRF default
+Router identifier 10.0.1.1, local AS number 65000
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806 10.1.11.10
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806 10.1.11.100
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806 10.1.11.101
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.2:10010 mac-ip 0050.7966.6807
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.2:10010 mac-ip 0050.7966.6807 10.1.11.102
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.2:10010 mac-ip 0050.7966.6807 10.1.11.200
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6808
+                                 10.0.0.3              -       100     0       65003 i
+ * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6808 10.1.11.103
+                                 10.0.0.3              -       100     0       65003 i
+ * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6809
+                                 10.0.0.3              -       100     0       65003 i
+ * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6809 10.1.11.104
+                                 10.0.0.3              -       100     0       65003 i
+SPINE-01#
+
+
