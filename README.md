@@ -589,6 +589,7 @@ PING 10.0.0.1 (10.0.0.1) from 10.0.0.3 : 72(100) bytes of data.
 80 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=7.44 ms
 80 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=9.04 ms
 
+```
 
 ```
 
@@ -694,6 +695,7 @@ PING 10.0.2.2 (10.0.2.2) from 10.0.0.2 : 72(100) bytes of data.
 rtt min/avg/max/mdev = 6.954/9.772/12.589/2.110 ms, ipg/ewma 13.788/11.073 ms
 LEAF-02#
 
+```
 
 ```
 LEAF-01#
