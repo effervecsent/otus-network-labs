@@ -509,3 +509,250 @@ DstAddr        MyDisc    YourDisc  Interface/Transport    Type          LastUp
 SPINE-02#
 
 ```
+
+
+###Что было сделано после проверки дз: 
+
+-анонсированы лупбеки на Spine01, Spine02 
+-проверка пингов с лупбеков: 
+
+```
+SPINE-01#ping 10.0.0.3 source lo0
+PING 10.0.0.3 (10.0.0.3) from 10.0.1.1 : 72(100) bytes of data.
+80 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=12.6 ms
+80 bytes from 10.0.0.3: icmp_seq=2 ttl=64 time=10.8 ms
+80 bytes from 10.0.0.3: icmp_seq=3 ttl=64 time=10.6 ms
+80 bytes from 10.0.0.3: icmp_seq=4 ttl=64 time=9.12 ms
+80 bytes from 10.0.0.3: icmp_seq=5 ttl=64 time=6.88 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 56ms
+rtt min/avg/max/mdev = 6.882/10.038/12.646/1.934 ms, ipg/ewma 14.040/11.202 ms
+SPINE-01#ping 10.0.0.2 source lo0
+PING 10.0.0.2 (10.0.0.2) from 10.0.1.1 : 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=9.05 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=64 time=8.50 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=64 time=9.17 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=64 time=13.7 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=64 time=11.3 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 40ms
+rtt min/avg/max/mdev = 8.506/10.369/13.797/1.961 ms, pipe 2, ipg/ewma 10.101/9.822 ms
+SPINE-01#ping 10.0.0.1 source lo0
+PING 10.0.0.1 (10.0.0.1) from 10.0.1.1 : 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=8.31 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=10.5 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=6.34 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=6.83 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=7.77 ms
+
+--- 10.0.0.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 41ms
+rtt min/avg/max/mdev = 6.347/7.957/10.512/1.452 ms, ipg/ewma 10.335/8.081 ms
+SPINE-01#
+```
+
+
+```
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 2ms
+rtt min/avg/max/mdev = 0.153/0.234/0.531/0.149 ms, ipg/ewma 0.524/0.378 ms
+LEAF-03#ping 10.0.0.3 sou lo0
+PING 10.0.0.3 (10.0.0.3) from 10.0.0.3 : 72(100) bytes of data.
+80 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=0.847 ms
+80 bytes from 10.0.0.3: icmp_seq=2 ttl=64 time=0.155 ms
+80 bytes from 10.0.0.3: icmp_seq=3 ttl=64 time=0.206 ms
+80 bytes from 10.0.0.3: icmp_seq=4 ttl=64 time=0.174 ms
+80 bytes from 10.0.0.3: icmp_seq=5 ttl=64 time=0.171 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 11ms
+rtt min/avg/max/mdev = 0.155/0.310/0.847/0.269 ms, ipg/ewma 2.958/0.569 ms
+LEAF-03#ping 10.0.0.2 sou lo0
+PING 10.0.0.2 (10.0.0.2) from 10.0.0.3 : 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=63 time=23.5 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=63 time=20.7 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=63 time=12.5 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=63 time=14.2 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=63 time=16.9 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 81ms
+rtt min/avg/max/mdev = 12.515/17.595/23.540/4.072 ms, pipe 2, ipg/ewma 20.423/20.408 ms
+LEAF-03#ping 10.0.0.1 sou lo0
+PING 10.0.0.1 (10.0.0.1) from 10.0.0.3 : 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=9.98 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=8.08 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=9.08 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=7.44 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=9.04 ms
+
+
+```
+
+PINE-02#ping 10.0.0.1 sou lo0
+PING 10.0.0.1 (10.0.0.1) from 10.0.2.2 : 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=0.875 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=0.179 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=0.170 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=0.154 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=0.191 ms
+
+--- 10.0.0.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 11ms
+rtt min/avg/max/mdev = 0.154/0.313/0.875/0.281 ms, ipg/ewma 2.781/0.585 ms
+SPINE-02#ping 10.0.0.2 sou lo0
+PING 10.0.0.2 (10.0.0.2) from 10.0.2.2 : 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=8.85 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=64 time=9.89 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=64 time=6.04 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=64 time=6.53 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=64 time=9.50 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 39ms
+rtt min/avg/max/mdev = 6.042/8.165/9.897/1.576 ms, ipg/ewma 9.911/8.497 ms
+SPINE-02#ping 10.0.0.3 sou lo0
+PING 10.0.0.3 (10.0.0.3) from 10.0.2.2 : 72(100) bytes of data.
+80 bytes from 10.0.0.3: icmp_seq=1 ttl=64 time=10.9 ms
+80 bytes from 10.0.0.3: icmp_seq=2 ttl=64 time=9.31 ms
+80 bytes from 10.0.0.3: icmp_seq=3 ttl=64 time=6.52 ms
+80 bytes from 10.0.0.3: icmp_seq=4 ttl=64 time=6.94 ms
+80 bytes from 10.0.0.3: icmp_seq=5 ttl=64 time=8.90 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 46ms
+rtt min/avg/max/mdev = 6.527/8.518/10.911/1.613 ms, ipg/ewma 11.656/9.672 ms
+SPINE-02#
+
+
+```
+
+
+```
+
+LEAF-02#ping 10.0.0.1 sou lo0
+PING 10.0.0.1 (10.0.0.1) from 10.0.0.2 : 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=13.5 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=7.44 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=6.43 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=7.50 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=7.15 ms
+
+--- 10.0.0.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 53ms
+rtt min/avg/max/mdev = 6.433/8.418/13.562/2.602 ms, ipg/ewma 13.263/10.903 ms
+LEAF-02#ping 10.0.0.2 sou lo0
+PING 10.0.0.2 (10.0.0.2) from 10.0.0.2 : 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=0.828 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=64 time=0.184 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=64 time=0.193 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=64 time=0.208 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=64 time=0.178 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 6ms
+rtt min/avg/max/mdev = 0.178/0.318/0.828/0.255 ms, ipg/ewma 1.646/0.564 ms
+LEAF-02#ping 10.0.0.3 sou lo0
+PING 10.0.0.3 (10.0.0.3) from 10.0.0.2 : 72(100) bytes of data.
+80 bytes from 10.0.0.3: icmp_seq=1 ttl=63 time=20.9 ms
+80 bytes from 10.0.0.3: icmp_seq=2 ttl=63 time=22.1 ms
+80 bytes from 10.0.0.3: icmp_seq=3 ttl=63 time=19.3 ms
+80 bytes from 10.0.0.3: icmp_seq=4 ttl=63 time=17.3 ms
+80 bytes from 10.0.0.3: icmp_seq=5 ttl=63 time=14.6 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 78ms
+rtt min/avg/max/mdev = 14.690/18.921/22.195/2.658 ms, pipe 2, ipg/ewma 19.652/19.735 ms
+LEAF-02#ping 10.0.1.1 sou lo0
+PING 10.0.1.1 (10.0.1.1) from 10.0.0.2 : 72(100) bytes of data.
+80 bytes from 10.0.1.1: icmp_seq=1 ttl=64 time=8.77 ms
+80 bytes from 10.0.1.1: icmp_seq=2 ttl=64 time=8.23 ms
+80 bytes from 10.0.1.1: icmp_seq=3 ttl=64 time=7.62 ms
+80 bytes from 10.0.1.1: icmp_seq=4 ttl=64 time=11.0 ms
+80 bytes from 10.0.1.1: icmp_seq=5 ttl=64 time=12.6 ms
+
+--- 10.0.1.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 49ms
+rtt min/avg/max/mdev = 7.621/9.677/12.688/1.903 ms, pipe 2, ipg/ewma 12.339/9.358 ms
+
+--- 10.0.1.2 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 49ms
+
+LEAF-02#ping 10.0.2.2 sou lo0
+PING 10.0.2.2 (10.0.2.2) from 10.0.0.2 : 72(100) bytes of data.
+80 bytes from 10.0.2.2: icmp_seq=1 ttl=64 time=12.5 ms
+80 bytes from 10.0.2.2: icmp_seq=2 ttl=64 time=10.7 ms
+80 bytes from 10.0.2.2: icmp_seq=3 ttl=64 time=7.72 ms
+80 bytes from 10.0.2.2: icmp_seq=4 ttl=64 time=10.8 ms
+80 bytes from 10.0.2.2: icmp_seq=5 ttl=64 time=6.95 ms
+
+--- 10.0.2.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 55ms
+rtt min/avg/max/mdev = 6.954/9.772/12.589/2.110 ms, ipg/ewma 13.788/11.073 ms
+LEAF-02#
+
+
+```
+LEAF-01#
+LEAF-01#
+LEAF-01#ping 10.0.2.2 sour lo0
+PING 10.0.2.2 (10.0.2.2) from 10.0.0.1 : 72(100) bytes of data.
+80 bytes from 10.0.2.2: icmp_seq=1 ttl=64 time=12.7 ms
+80 bytes from 10.0.2.2: icmp_seq=2 ttl=64 time=7.84 ms
+80 bytes from 10.0.2.2: icmp_seq=3 ttl=64 time=10.8 ms
+80 bytes from 10.0.2.2: icmp_seq=4 ttl=64 time=9.01 ms
+80 bytes from 10.0.2.2: icmp_seq=5 ttl=64 time=7.54 ms
+
+--- 10.0.2.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 55ms
+rtt min/avg/max/mdev = 7.543/9.596/12.747/1.957 ms, ipg/ewma 13.764/11.094 ms
+LEAF-01#ping 10.0.1.1 sour lo0
+PING 10.0.1.1 (10.0.1.1) from 10.0.0.1 : 72(100) bytes of data.
+80 bytes from 10.0.1.1: icmp_seq=1 ttl=64 time=10.6 ms
+80 bytes from 10.0.1.1: icmp_seq=2 ttl=64 time=11.9 ms
+80 bytes from 10.0.1.1: icmp_seq=3 ttl=64 time=7.89 ms
+80 bytes from 10.0.1.1: icmp_seq=4 ttl=64 time=7.13 ms
+80 bytes from 10.0.1.1: icmp_seq=5 ttl=64 time=9.21 ms
+
+--- 10.0.1.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 51ms
+rtt min/avg/max/mdev = 7.130/9.362/11.966/1.759 ms, ipg/ewma 12.791/9.904 ms
+LEAF-01#ping 10.0.0.1 sour lo0
+PING 10.0.0.1 (10.0.0.1) from 10.0.0.1 : 72(100) bytes of data.
+80 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=0.555 ms
+80 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=0.151 ms
+80 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=0.153 ms
+80 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=0.151 ms
+80 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=0.150 ms
+
+--- 10.0.0.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 3ms
+rtt min/avg/max/mdev = 0.150/0.232/0.555/0.161 ms, ipg/ewma 0.867/0.388 ms
+LEAF-01#ping 10.0.0.2 sour lo0
+PING 10.0.0.2 (10.0.0.2) from 10.0.0.1 : 72(100) bytes of data.
+80 bytes from 10.0.0.2: icmp_seq=1 ttl=63 time=21.3 ms
+80 bytes from 10.0.0.2: icmp_seq=2 ttl=63 time=21.0 ms
+80 bytes from 10.0.0.2: icmp_seq=3 ttl=63 time=13.3 ms
+80 bytes from 10.0.0.2: icmp_seq=4 ttl=63 time=14.4 ms
+80 bytes from 10.0.0.2: icmp_seq=5 ttl=63 time=16.4 ms
+
+--- 10.0.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 76ms
+rtt min/avg/max/mdev = 13.347/17.341/21.331/3.310 ms, pipe 2, ipg/ewma 19.247/19.189 ms
+LEAF-01#ping 10.0.0.3 sour lo0
+PING 10.0.0.3 (10.0.0.3) from 10.0.0.1 : 72(100) bytes of data.
+80 bytes from 10.0.0.3: icmp_seq=1 ttl=63 time=21.5 ms
+80 bytes from 10.0.0.3: icmp_seq=2 ttl=63 time=19.7 ms
+80 bytes from 10.0.0.3: icmp_seq=3 ttl=63 time=18.8 ms
+80 bytes from 10.0.0.3: icmp_seq=4 ttl=63 time=19.0 ms
+80 bytes from 10.0.0.3: icmp_seq=5 ttl=63 time=16.2 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 84ms
+rtt min/avg/max/mdev = 16.235/19.091/21.524/1.713 ms, pipe 2, ipg/ewma 21.248/20.192 ms
+LEAF-01#
+
+```
