@@ -93,6 +93,20 @@ LEAF-03|lo0|10.0.0.3/32|Loopback Локальный Router ID
 LEAF-03|Eth1|172.16.3.1/30|P2P Линк|SPINE-01 (Eth3)
 LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 
+
+### Tаблица параметров Overlay (EVPN / VXLAN)
+
+
+
+| Устройство | Номер AS | Loopback0 IP (BGP / VTEP) | Роль в BGP EVPN | Соседи в Overlay (Peer IP) | Настройки VXLAN (VNI / RD / RT) |
+| :--- | :---: | :---: | :--- | :--- | :--- |
+| **SPINE-01** | 65000 | 10.0.1.1 | Route Reflector / Transit | 10.0.0.1 (Leaf-01)<br>10.0.0.2 (Leaf-02)<br>10.0.0.3 (Leaf-03) | Не терминирует VXLAN |
+| **SPINE-02** | 65000 | 10.0.2.2 | Route Reflector / Transit | 10.0.0.1 (Leaf-01)<br>10.0.0.2 (Leaf-02)<br>10.0.0.3 (Leaf-03) | Не терминирует VXLAN |
+| **LEAF-01** | 65001 | 10.0.0.1 | VTEP Endpoint | 10.0.1.1 (Spine-01)<br>10.0.2.2 (Spine-02) | VNI: 10010 (VLAN 10)<br>RD: 10.0.0.1:10010<br>RT: both 10010:10010 |
+| **LEAF-02** | 65002 | 10.0.0.2 | VTEP Endpoint | 10.0.1.1 (Spine-01)<br>10.0.2.2 (Spine-02) | VNI: 10010 (VLAN 10)<br>RD: 10.0.0.2:10010<br>RT: both 10010:10010 |
+| **LEAF-03** | 65003 | 10.0.0.3 | VTEP Endpoint | 10.0.1.1 (Spine-01)<br>10.0.2.2 (Spine-02) | VNI: 10010 (VLAN 10)<br>RD: 10.0.0.3:10010<br>RT: both 10010:10010 |
+
+
 ### Настройка оборудования 
 
 Spine-01: 
