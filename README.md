@@ -19,7 +19,7 @@
 
 ### Схема 
 
-![xxx.PNG](xxx.PNG)
+![vxlan evpn l2.PNG](vxlan evpn l2.PNG)
 
 Была выбрана следующая адресация для Underlay: 
 
