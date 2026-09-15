@@ -982,6 +982,24 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
  * >      RD: 10.0.0.3:10 mac-ip 0050.7966.6808
                                  10.0.0.3              -       100     0       65003 i
 SPINE-01#
+SPINE-01#show bgp evpn route-type imet
+BGP routing table information for VRF default
+Router identifier 10.0.1.1, local AS number 65000
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.1:10 imet 10.0.0.1
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.2:10 imet 10.0.0.2
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.3:10 imet 10.0.0.3
+                                 10.0.0.3              -       100     0       65003 i
+SPINE-01#show bgp evpn route-type mac-ip
+
+
 ```
 
 ```
@@ -1004,6 +1022,23 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
  * >      RD: 10.0.0.3:10 mac-ip 0050.7966.6808
                                  10.0.0.3              -       100     0       65003 i
 SPINE-02#
+SPINE-02#show bgp evpn route-type imet
+BGP routing table information for VRF default
+Router identifier 10.0.2.2, local AS number 65000
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.1:10 imet 10.0.0.1
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.2:10 imet 10.0.0.2
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.3:10 imet 10.0.0.3
+                                 10.0.0.3              -       100     0       65003 i
+SPINE-02#
+
 ```
 
 ```
