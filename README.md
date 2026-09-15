@@ -111,68 +111,195 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 
 Spine-01: 
 ```
-configure terminal
+SPINE-01#sh run
+! Command: show running-config
+! device: SPINE-01 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname SPINE-01
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   description to-Leaf-01-eth1
+   mtu 9000
+   no switchport
+   ip address 172.16.1.2/30
+   no ip ospf neighbor bfd
+!
+interface Ethernet2
+   description to-Leaf-02-Eth1
+   mtu 9000
+   no switchport
+   ip address 172.16.2.2/30
+   no ip ospf neighbor bfd
+!
+interface Ethernet3
+   description to-Leaf-03-Eth1
+   mtu 9000
+   no switchport
+   ip address 172.16.3.2/30
+   no ip ospf neighbor bfd
+!
+interface Ethernet4
+   
+   shutdown
+   mtu 9214
+   no switchport
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.1.1/32
+!
+interface Management1
+!
+ip routing
+!
+ip route 8.8.8.0/24 Null0
 !
 router bgp 65000
-   no bgp default ipv4-unicast - По умолчанию включен обмен стандартными IPv4-маршрутами для любого добавленного соседа. Эта команда отменяет автоматический обмен, чтобы вручную указывать, какими типами маршрутов обмениваться с конкретным соседом.
-
-Создаем Overlay peer-group для EVPN
+   router-id 10.0.1.1
+   no bgp default ipv4-unicast
+   maximum-paths 4 ecmp 4
    neighbor EVPN-OVERLAY peer group
    neighbor EVPN-OVERLAY update-source Loopback0
-   neighbor EVPN-OVERLAY ebgp-multihop 3 -поскольку сессия строится между Loopback-адресами, для eBGP-сессии нужно увеличить время жизни TTL. Значение 3 позволяет устанавливать BGP-соединение через несколько транзитных узлов/линков
-   neighbor EVPN-OVERLAY send-community extended -разрешает передачу расширенных BGP community. В них передаются параметры Route Target и Route Distinguisher, связывающие VXLAN-сегменты.
-
-Привязываем реальные Loopback0-адреса Лифов к EVPN
+   neighbor EVPN-OVERLAY ebgp-multihop 3
+   neighbor EVPN-OVERLAY send-community extended
    neighbor 10.0.0.1 peer group EVPN-OVERLAY
    neighbor 10.0.0.1 remote-as 65001
    neighbor 10.0.0.1 description to-LEAF-01-EVPN
-
    neighbor 10.0.0.2 peer group EVPN-OVERLAY
    neighbor 10.0.0.2 remote-as 65002
    neighbor 10.0.0.2 description to-LEAF-02-EVPN
-   !
    neighbor 10.0.0.3 peer group EVPN-OVERLAY
    neighbor 10.0.0.3 remote-as 65003
    neighbor 10.0.0.3 description to-LEAF-03-EVPN
+   neighbor 172.16.1.1 remote-as 65001
+   neighbor 172.16.1.1 description to-LEAF-01-UNDERLAY
+   neighbor 172.16.2.1 remote-as 65002
+   neighbor 172.16.2.1 description to-LEAF-02-UNDERLAY
+   neighbor 172.16.3.1 remote-as 65003
+   neighbor 172.16.3.1 description to-LEAF-03-UNDERLAY
    !
-   ! Активируем семейство EVPN
    address-family evpn
       neighbor EVPN-OVERLAY activate
+   !
+   address-family ipv4
+      neighbor 172.16.1.1 activate
+      neighbor 172.16.2.1 activate
+      neighbor 172.16.3.1 activate
+      network 10.0.1.1/32
 !
 end
+SPINE-01#
 ```
 
 Настройки Spine-02
 
 ```
-configure terminal
+SPINE-02#sh run
+! Command: show running-config
+! device: SPINE-02 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+no logging console
+!
+hostname SPINE-02
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   description to-Leaf01-eth2
+   mtu 9000
+   no switchport
+   ip address 172.16.1.6/30
+!
+interface Ethernet2
+   description to-Leaf-02-Eth2
+   mtu 9000
+   no switchport
+   ip address 172.16.2.6/30
+!
+interface Ethernet3
+   description to-Leaf-03-Eth2
+   mtu 9000
+   no switchport
+   ip address 172.16.3.6/30
+!
+interface Ethernet4
+   description UNUSED_INTERCONNECT_TO_SPINE-01
+   shutdown
+   mtu 9214
+   no switchport
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.2.2/32
+!
+interface Management1
+!
+ip routing
 !
 router bgp 65000
+   router-id 10.0.2.2
    no bgp default ipv4-unicast
-   
- 
-  
+   maximum-paths 4 ecmp 4
    neighbor EVPN-OVERLAY peer group
    neighbor EVPN-OVERLAY update-source Loopback0
    neighbor EVPN-OVERLAY ebgp-multihop 3
    neighbor EVPN-OVERLAY send-community extended
-   !
- 
    neighbor 10.0.0.1 peer group EVPN-OVERLAY
    neighbor 10.0.0.1 remote-as 65001
    neighbor 10.0.0.1 description to-LEAF-01-EVPN
-   !
    neighbor 10.0.0.2 peer group EVPN-OVERLAY
    neighbor 10.0.0.2 remote-as 65002
    neighbor 10.0.0.2 description to-LEAF-02-EVPN
-   !
    neighbor 10.0.0.3 peer group EVPN-OVERLAY
    neighbor 10.0.0.3 remote-as 65003
    neighbor 10.0.0.3 description to-LEAF-03-EVPN
+   neighbor 172.16.1.5 remote-as 65001
+   neighbor 172.16.1.5 description to-LEAF-01-UNDERLAY
+   neighbor 172.16.2.5 remote-as 65002
+   neighbor 172.16.2.5 description to-LEAF-02-UNDERLAY
+   neighbor 172.16.3.5 remote-as 65003
+   neighbor 172.16.3.5 description to-LEAF-03-UNDERLAY
    !
-  
    address-family evpn
       neighbor EVPN-OVERLAY activate
+   !
+   address-family ipv4
+      neighbor 172.16.1.5 activate
+      neighbor 172.16.2.5 activate
+      neighbor 172.16.3.5 activate
+      network 10.0.2.2/32
 !
 end
 ```
@@ -180,135 +307,417 @@ end
 Настройки leaf-01
 
 ```
-configure terminal
+SPINE-02#sh run
+! Command: show running-config
+! device: SPINE-02 (vEOS-lab, EOS-4.29.2F)
 !
-! 1. Создаем интерфейс VXLAN и привязываем VLAN 10 к VNI 10010
-interface Vxlan1
-   vxlan source-interface Loopback0
-   vxlan udp-port 4789
-   vxlan vlan 10 vni 10010
+! boot system flash:/vEOS-lab.swi
 !
-! 2. Настраиваем BGP для поддержки EVPN Overlay и Клиентской Зоны 1
-router bgp 65001
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+no logging console
+!
+hostname SPINE-02
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   description to-Leaf01-eth2
+   mtu 9000
+   no switchport
+   ip address 172.16.1.6/30
+!
+interface Ethernet2
+   description to-Leaf-02-Eth2
+   mtu 9000
+   no switchport
+   ip address 172.16.2.6/30
+!
+interface Ethernet3
+   description to-Leaf-03-Eth2
+   mtu 9000
+   no switchport
+   ip address 172.16.3.6/30
+!
+interface Ethernet4
+   description UNUSED_INTERCONNECT_TO_SPINE-01
+   shutdown
+   mtu 9214
+   no switchport
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.2.2/32
+!
+interface Management1
+!
+ip routing
+!
+router bgp 65000
+   router-id 10.0.2.2
    no bgp default ipv4-unicast
+   maximum-paths 4 ecmp 4
+   neighbor EVPN-OVERLAY peer group
+   neighbor EVPN-OVERLAY update-source Loopback0
+   neighbor EVPN-OVERLAY ebgp-multihop 3
+   neighbor EVPN-OVERLAY send-community extended
+   neighbor 10.0.0.1 peer group EVPN-OVERLAY
+   neighbor 10.0.0.1 remote-as 65001
+   neighbor 10.0.0.1 description to-LEAF-01-EVPN
+   neighbor 10.0.0.2 peer group EVPN-OVERLAY
+   neighbor 10.0.0.2 remote-as 65002
+   neighbor 10.0.0.2 description to-LEAF-02-EVPN
+   neighbor 10.0.0.3 peer group EVPN-OVERLAY
+   neighbor 10.0.0.3 remote-as 65003
+   neighbor 10.0.0.3 description to-LEAF-03-EVPN
+   neighbor 172.16.1.5 remote-as 65001
+   neighbor 172.16.1.5 description to-LEAF-01-UNDERLAY
+   neighbor 172.16.2.5 remote-as 65002
+   neighbor 172.16.2.5 description to-LEAF-02-UNDERLAY
+   neighbor 172.16.3.5 remote-as 65003
+   neighbor 172.16.3.5 description to-LEAF-03-UNDERLAY
    !
-   ! Активируем стыковых соседей-спайнов строго в семействе IPv4
-   address-family ipv4
-      neighbor 172.16.1.2 activate
-      neighbor 172.16.1.6 activate
-      network 10.0.0.1/32
-   !
-   ! Создаем Overlay-группу до Спайнов
-   neighbor EVPN-SPINES peer group
-   neighbor EVPN-SPINES remote-as 65000
-   neighbor EVPN-SPINES update-source Loopback0
-   neighbor EVPN-SPINES ebgp-multihop 3
-   neighbor EVPN-SPINES send-community extended
-   !
-   ! Привязываем Loopback0-адреса Спайнов к EVPN группе
-   neighbor 10.0.1.1 peer group EVPN-SPINES
-   neighbor 10.0.1.1 description to-SPINE-01-EVPN
-   neighbor 10.0.2.2 peer group EVPN-SPINES
-   neighbor 10.0.2.2 description to-SPINE-02-EVPN
-   !
-   ! Активируем семейство EVPN для обмена MAC-адресами
    address-family evpn
-      neighbor EVPN-SPINES activate
+      neighbor EVPN-OVERLAY activate
    !
-   ! Включаем генерацию EVPN маршрутов для Клиентской Зоны 1 (VLAN 10)
-   vlan 10
-      rd 10.0.0.1:10010
-      route-target both 10010:10010
-      redistribute learned
+   address-family ipv4
+      neighbor 172.16.1.5 activate
+      neighbor 172.16.2.5 activate
+      neighbor 172.16.3.5 activate
+      network 10.0.2.2/32
 !
+end
 end
 ```
 
 ###Настройки leaf-02
 
 ```
-configure terminal
+logging level XMPP errors
+logging level ZTP informational
 !
-! 
+match-list input string ztpFilter
+   10 match regex ETH-4
+!
+hostname LEAF-02
+!
+spanning-tree mode mstp
+!
+vlan 10
+   name CLIENT_NETWORK
+!
+interface Ethernet1
+   description to-Spine-01-Eth2
+   mtu 9000
+   speed 400g-8
+   no switchport
+   ip address 172.16.2.1/30
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet2
+   description to -Spine-02-ETh2
+   mtu 9000
+   no switchport
+   ip address 172.16.2.5/30
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet3
+   description TO_SPINE-02_Eth2
+   mtu 9214
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet4
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet5
+   description TO_Client-02
+   speed 400g-8
+   switchport access vlan 10
+   switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+   spanning-tree portfast
+!
+interface Ethernet6
+   description UNUSED_PORT
+   shutdown
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet7
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet8
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Loopback0
+   ip address 10.0.0.2/32
+!
+interface Management1
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Vlan10
+   description Gateway_for_LEAF-02_Clients
+   ip address 10.1.11.1/24
+!
+interface Vxlan1
    vxlan source-interface Loopback0
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
 !
-! 
+ip routing
+!
+system control-plane
+   no service-policy input copp-system-policy
+!
+route-map RM_import_direct permit 10
+   match interface Loopback0
+!
+route-map RM_red_conn permit 10
+   match interface Loopback0
+   set community 65001:100 65002:200 additive
+   set origin incomplete
+!
+router bgp 65002
+   router-id 10.0.0.2
    no bgp default ipv4-unicast
-   no redistribute connected route-map RM_red_conn
+   maximum-paths 4 ecmp 4
+   neighbor EVPN-OVERLAY peer group
+   neighbor SPINE-EVPN peer group
+   neighbor SPINE-EVPN remote-as 65000
+   neighbor SPINE-EVPN update-source Loopback0
+   neighbor SPINE-EVPN ebgp-multihop 3
+   neighbor SPINE-EVPN send-community extended
+   neighbor 10.0.1.1 peer group SPINE-EVPN
+   neighbor 10.0.1.1 remote-as 65000
+   neighbor 10.0.1.1 description to-SPINE-01-EVPN
+   neighbor 10.0.2.2 peer group SPINE-EVPN
+   neighbor 10.0.2.2 remote-as 65000
+   neighbor 10.0.2.2 update-source Loopback0
+   neighbor 10.0.2.2 description SPINE-02-EVPN
+   neighbor 10.0.2.2 ebgp-multihop 2
+   neighbor 172.16.2.2 remote-as 65000
+   neighbor 172.16.2.2 description SPINE-01-UNDERLAY
+   neighbor 172.16.2.2 send-community standard extended
+   neighbor 172.16.2.6 remote-as 65000
+   neighbor 172.16.2.6 description SPINE-02-UNDERLAY
+   neighbor 172.16.2.6 send-community standard extended
+   redistribute connected route-map RM_red_conn
    !
- 
+   vlan 10
+      rd 10.0.0.2:10
+      route-target both 65000:10010
+      redistribute learned
+   !
+   address-family evpn
+      neighbor SPINE-EVPN activate
+      neighbor 10.0.1.1 activate
+      neighbor 10.0.2.2 activate
+   !
+   address-family ipv4
       neighbor 172.16.2.2 activate
       neighbor 172.16.2.6 activate
       network 10.0.0.2/32
-
-   neighbor EVPN-SPINES peer group
-   neighbor EVPN-SPINES remote-as 65000
-   neighbor EVPN-SPINES update-source Loopback0
-   neighbor EVPN-SPINES ebgp-multihop 3
-   neighbor EVPN-SPINES send-community extended
-   !
-  
-   neighbor 10.0.1.1 peer group EVPN-SPINES
-   neighbor 10.0.1.1 description to-SPINE-01-EVPN
-   neighbor 10.0.2.2 peer group EVPN-SPINES
-   neighbor 10.0.2.2 description to-SPINE-02-EVPN
-   !
-  
-   address-family evpn
-      neighbor EVPN-SPINES activate
-   !
-   vlan 10
-      rd 10.0.0.2:10010
-      route-target both 10010:10010
-      redistribute learned
+      redistribute connected route-map RM_red_conn
 !
 end
+LEAF-02#
 ```
 
 
 Настройки leaf-03
 
 ```
-
-configure terminal
+logging level XMPP errors
+logging level ZTP informational
 !
+match-list input string ztpFilter
+   10 match regex ETH-4
+!
+hostname LEAF-02
+!
+spanning-tree mode mstp
+!
+vlan 10
+   name CLIENT_NETWORK
+!
+interface Ethernet1
+   description to-Spine-01-Eth2
+   mtu 9000
+   speed 400g-8
+   no switchport
+   ip address 172.16.2.1/30
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet2
+   description to -Spine-02-ETh2
+   mtu 9000
+   no switchport
+   ip address 172.16.2.5/30
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet3
+   description TO_SPINE-02_Eth2
+   mtu 9214
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet4
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet5
+   description TO_Client-02
+   speed 400g-8
+   switchport access vlan 10
+   switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+   spanning-tree portfast
+!
+interface Ethernet6
+   description UNUSED_PORT
+   shutdown
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet7
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Ethernet8
+   speed 400g-8
+   no switchport
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Loopback0
+   ip address 10.0.0.2/32
+!
+interface Management1
+   ipv6 enable
+   ipv6 address auto-config
+   ipv6 nd ra rx accept default-route
+!
+interface Vlan10
+   description Gateway_for_LEAF-02_Clients
+   ip address 10.1.11.1/24
+!
+interface Vxlan1
    vxlan source-interface Loopback0
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
 !
-router bgp 65003
+ip routing
+!
+system control-plane
+   no service-policy input copp-system-policy
+!
+route-map RM_import_direct permit 10
+   match interface Loopback0
+!
+route-map RM_red_conn permit 10
+   match interface Loopback0
+   set community 65001:100 65002:200 additive
+   set origin incomplete
+!
+router bgp 65002
+   router-id 10.0.0.2
    no bgp default ipv4-unicast
-   !
-
-   address-family ipv4
-      neighbor 172.16.3.2 activate
-      neighbor 172.16.3.6 activate
-      network 10.0.0.3/32
- 
-   neighbor EVPN-SPINES peer group
-   neighbor EVPN-SPINES remote-as 65000
-   neighbor EVPN-SPINES update-source Loopback0
-   neighbor EVPN-SPINES ebgp-multihop 3
-   neighbor EVPN-SPINES send-community extended
-   !
- 
-   neighbor 10.0.1.1 peer group EVPN-SPINES
+   maximum-paths 4 ecmp 4
+   neighbor EVPN-OVERLAY peer group
+   neighbor SPINE-EVPN peer group
+   neighbor SPINE-EVPN remote-as 65000
+   neighbor SPINE-EVPN update-source Loopback0
+   neighbor SPINE-EVPN ebgp-multihop 3
+   neighbor SPINE-EVPN send-community extended
+   neighbor 10.0.1.1 peer group SPINE-EVPN
+   neighbor 10.0.1.1 remote-as 65000
    neighbor 10.0.1.1 description to-SPINE-01-EVPN
-   neighbor 10.0.2.2 peer group EVPN-SPINES
-   neighbor 10.0.2.2 description to-SPINE-02-EVPN
+   neighbor 10.0.2.2 peer group SPINE-EVPN
+   neighbor 10.0.2.2 remote-as 65000
+   neighbor 10.0.2.2 update-source Loopback0
+   neighbor 10.0.2.2 description SPINE-02-EVPN
+   neighbor 10.0.2.2 ebgp-multihop 2
+   neighbor 172.16.2.2 remote-as 65000
+   neighbor 172.16.2.2 description SPINE-01-UNDERLAY
+   neighbor 172.16.2.2 send-community standard extended
+   neighbor 172.16.2.6 remote-as 65000
+   neighbor 172.16.2.6 description SPINE-02-UNDERLAY
+   neighbor 172.16.2.6 send-community standard extended
+   redistribute connected route-map RM_red_conn
+   !
+   vlan 10
+      rd 10.0.0.2:10
+      route-target both 65000:10010
+      redistribute learned
    !
    address-family evpn
-      neighbor EVPN-SPINES activate
+      neighbor SPINE-EVPN activate
+      neighbor 10.0.1.1 activate
+      neighbor 10.0.2.2 activate
    !
-
-   vlan 10
-      rd 10.0.0.3:10010
-      route-target both 10010:10010
-      redistribute learned
+   address-family ipv4
+      neighbor 172.16.2.2 activate
+      neighbor 172.16.2.6 activate
+      network 10.0.0.2/32
+      redistribute connected route-map RM_red_conn
 !
 end
+LEAF-02#
 
 ```
 
@@ -381,66 +790,107 @@ VPCS> ping 10.1.11.1
 
 ```
 
-### Проерка связности 
+### Проверка связности 
 
 ```
+SPINE-01#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.1.1, local AS number 65000
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.0.0.1         65001 Established   L2VPN EVPN              Negotiated              1          1
+10.0.0.2         65002 Established   L2VPN EVPN              Negotiated              1          1
+10.0.0.3         65003 Established   L2VPN EVPN              Negotiated              1          1
+172.16.1.1       65001 Established   IPv4 Unicast            Negotiated              1          1
+172.16.2.1       65002 Established   IPv4 Unicast            Negotiated              1          1
+172.16.3.1       65003 Established   IPv4 Unicast            Negotiated              1          1
 SPINE-01#sh bgp evpn summ
 BGP summary information for VRF default
 Router identifier 10.0.1.1, local AS number 65000
 Neighbor Status Codes: m - Under maintenance
   Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  to-LEAF-01-EVPN          10.0.0.1 4 65001             51        52    0    0 00:00:45 Estab   1      1
-  to-LEAF-02-EVPN          10.0.0.2 4 65002             43        45    0    0 00:00:44 Estab   1      1
-  to-LEAF-03-EVPN          10.0.0.3 4 65003             39        40    0    0 00:00:44 Estab   1      1
+  to-LEAF-01-EVPN          10.0.0.1 4 65001             89        85    0    0 00:40:12 Estab   1      1
+  to-LEAF-02-EVPN          10.0.0.2 4 65002             89        88    0    0 00:40:11 Estab   1      1
+  to-LEAF-03-EVPN          10.0.0.3 4 65003             49        47    0    0 00:33:28 Estab   1      1
 SPINE-01#
 SPINE-01#
+
 ```
 ```
+SPINE-02# sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.2.2, local AS number 65000
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.0.0.1         65001 Established   L2VPN EVPN              Negotiated              1          1
+10.0.0.2         65002 Established   L2VPN EVPN              Negotiated              1          1
+10.0.0.3         65003 Established   L2VPN EVPN              Negotiated              1          1
+172.16.1.5       65001 Established   IPv4 Unicast            Negotiated              1          1
+172.16.2.5       65002 Established   IPv4 Unicast            Negotiated              1          1
+172.16.3.5       65003 Established   IPv4 Unicast            Negotiated              1          1
 SPINE-02#sh bgp evpn summ
 BGP summary information for VRF default
 Router identifier 10.0.2.2, local AS number 65000
 Neighbor Status Codes: m - Under maintenance
   Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  to-LEAF-01-EVPN          10.0.0.1 4 65001             39        36    0    0 00:01:33 Estab   1      1
-  to-LEAF-02-EVPN          10.0.0.2 4 65002             49        40    0    0 00:02:21 Estab   1      1
-  to-LEAF-03-EVPN          10.0.0.3 4 65003             42        34    0    0 00:02:24 Estab   1      1
-SPINE-02#
-SPINE-02#
+  to-LEAF-01-EVPN          10.0.0.1 4 65001            128       129    0    0 01:33:37 Estab   1      1
+  to-LEAF-02-EVPN          10.0.0.2 4 65002            134       132    0    0 01:33:37 Estab   1      1
+  to-LEAF-03-EVPN          10.0.0.3 4 65003            133       131    0    0 01:33:37 Estab   1      1
 SPINE-02#
 ```
 ```
+LEAF-01#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.0.1, local AS number 65001
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.0.1.1         65000 Established   L2VPN EVPN              Negotiated              2          2
+10.0.2.2         65000 Established   L2VPN EVPN              Negotiated              2          2
+172.16.1.2       65000 Established   IPv4 Unicast            Negotiated              3          3
+172.16.1.6       65000 Established   IPv4 Unicast            Negotiated              3          3
 LEAF-01#sh bgp evpn summ
 BGP summary information for VRF default
 Router identifier 10.0.0.1, local AS number 65001
 Neighbor Status Codes: m - Under maintenance
   Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  to-SPINE-01-EVPN         10.0.1.1 4 65000             52        50    0    0 00:00:13 Estab   2      2
-  to-SPINE-02-EVPN         10.0.2.2 4 65000              7        10    0    0 00:01:11 Estab   2      2
-LEAF-01#
-LEAF-01#
-LEAF-01#
-LEAF-01#
+  to-SPINE-01-EVPN         10.0.1.1 4 65000             68        74    0    0 00:40:58 Estab   2      2
+  SPINE-02-EVPN            10.0.2.2 4 65000            129       129    0    0 01:34:01 Estab   2      2
 ```
 ```
+LEAF-02#sh bgp summ
+BGP summary information for VRF default
+Router identifier 10.0.0.2, local AS number 65002
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.0.1.1         65000 Established   L2VPN EVPN              Negotiated              2          2
+10.0.2.2         65000 Established   L2VPN EVPN              Negotiated              2          2
+172.16.2.2       65000 Established   IPv4 Unicast            Negotiated              3          3
+172.16.2.6       65000 Established   IPv4 Unicast            Negotiated              3          3
 LEAF-02#sh bgp evpn summ
 BGP summary information for VRF default
 Router identifier 10.0.0.2, local AS number 65002
 Neighbor Status Codes: m - Under maintenance
   Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  to-SPINE-01-EVPN         10.0.1.1 4 65000             49        47    0    0 00:03:37 Estab   2      2
-  to-SPINE-02-EVPN         10.0.2.2 4 65000             44        53    0    0 00:05:24 Estab   2      2
+  to-SPINE-01-EVPN         10.0.1.1 4 65000             69        75    0    0 00:41:22 Estab   2      2
+  SPINE-02-EVPN            10.0.2.2 4 65000            132       137    0    0 01:34:25 Estab   2      2
 LEAF-02#
 ```
 ```
-LEAF-03#
+BGP summary information for VRF default
+Router identifier 10.0.0.3, local AS number 65003
+Neighbor            AS Session State AFI/SAFI                AFI/SAFI State   NLRI Rcd   NLRI Acc
+---------- ----------- ------------- ----------------------- -------------- ---------- ----------
+10.0.1.1         65000 Established   L2VPN EVPN              Negotiated              2          2
+10.0.2.2         65000 Established   L2VPN EVPN              Negotiated              2          2
+172.16.3.2       65000 Established   IPv4 Unicast            Negotiated              3          3
+172.16.3.6       65000 Established   IPv4 Unicast            Negotiated              3          3
 LEAF-03#sh bgp evpn summ
 BGP summary information for VRF default
 Router identifier 10.0.0.3, local AS number 65003
 Neighbor Status Codes: m - Under maintenance
   Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  to-SPINE-01-EVPN         10.0.1.1 4 65000             40        41    0    0 00:00:57 Estab   2      2
-  to-SPINE-02-EVPN         10.0.2.2 4 65000             35        43    0    0 00:02:47 Estab   2      2
-LEAF-03#
+  to-SPINE-01-EVPN         10.0.1.1 4 65000             49        51    0    0 00:34:59 Estab   2      2
+  SPINE-02-EVPN            10.0.2.2 4 65000            132       135    0    0 01:34:45 Estab   2      2
 LEAF-03#
 ```
 
@@ -513,8 +963,7 @@ LEAF-03#
 
 
 ```
-SPINE-01#
-SPINE-01#
+
 SPINE-01#sh bgp evpn route-type mac-ip
 BGP routing table information for VRF default
 Router identifier 10.0.1.1, local AS number 65000
@@ -524,28 +973,127 @@ Origin codes: i - IGP, e - EGP, ? - incomplete
 AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
 
           Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806
+ * >      RD: 10.0.0.1:10 mac-ip 0050.7966.6806
                                  10.0.0.1              -       100     0       65001 i
- * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806 10.1.11.10
-                                 10.0.0.1              -       100     0       65001 i
- * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806 10.1.11.100
-                                 10.0.0.1              -       100     0       65001 i
- * >      RD: 10.0.0.1:10010 mac-ip 0050.7966.6806 10.1.11.101
-                                 10.0.0.1              -       100     0       65001 i
- * >      RD: 10.0.0.2:10010 mac-ip 0050.7966.6807
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807
                                  10.0.0.2              -       100     0       65002 i
- * >      RD: 10.0.0.2:10010 mac-ip 0050.7966.6807 10.1.11.102
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
                                  10.0.0.2              -       100     0       65002 i
- * >      RD: 10.0.0.2:10010 mac-ip 0050.7966.6807 10.1.11.200
-                                 10.0.0.2              -       100     0       65002 i
- * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6808
-                                 10.0.0.3              -       100     0       65003 i
- * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6808 10.1.11.103
-                                 10.0.0.3              -       100     0       65003 i
- * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6809
-                                 10.0.0.3              -       100     0       65003 i
- * >      RD: 10.0.0.3:10010 mac-ip 0050.7966.6809 10.1.11.104
+ * >      RD: 10.0.0.3:10 mac-ip 0050.7966.6808
                                  10.0.0.3              -       100     0       65003 i
 SPINE-01#
 ```
 
+```
+ to-LEAF-03-EVPN          10.0.0.3 4 65003            133       131    0    0 01:33:37 Estab   1      1
+SPINE-02#sh bgp evpn route-type mac-ip
+BGP routing table information for VRF default
+Router identifier 10.0.2.2, local AS number 65000
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.1:10 mac-ip 0050.7966.6806
+                                 10.0.0.1              -       100     0       65001 i
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 10.0.0.2              -       100     0       65002 i
+ * >      RD: 10.0.0.3:10 mac-ip 0050.7966.6808
+                                 10.0.0.3              -       100     0       65003 i
+SPINE-02#
+```
+
+```
+172.16.1.6       65000 Established   IPv4 Unicast            Negotiated              3          3
+LEAF-01#sh bgp evpn summ
+BGP summary information for VRF default
+Router identifier 10.0.0.1, local AS number 65001
+Neighbor Status Codes: m - Under maintenance
+  Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
+  to-SPINE-01-EVPN         10.0.1.1 4 65000             68        74    0    0 00:40:58 Estab   2      2
+  SPINE-02-EVPN            10.0.2.2 4 65000            129       129    0    0 01:34:01 Estab   2      2
+LEAF-01#sh bgp evpn route-type mac-ip
+BGP routing table information for VRF default
+Router identifier 10.0.0.1, local AS number 65001
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.1:10 mac-ip 0050.7966.6806
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807
+                                 10.0.0.2              -       100     0       65000 65002 i
+ *  ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807
+                                 10.0.0.2              -       100     0       65000 65002 i
+ * >Ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 10.0.0.2              -       100     0       65000 65002 i
+ *  ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 10.0.0.2              -       100     0       65000 65002 i
+ * >Ec    RD: 10.0.0.3:10 mac-ip 0050.7966.6808
+                                 10.0.0.3              -       100     0       65000 65003 i
+ *  ec    RD: 10.0.0.3:10 mac-ip 0050.7966.6808
+                                 10.0.0.3              -       100     0       65000 65003 i
+LEAF-01#
+```
+
+
+```
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 -                     -       -       0       i
+LEAF-02#sh bgp evpn route-type mac-ip
+BGP routing table information for VRF default
+Router identifier 10.0.0.2, local AS number 65002
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 10.0.0.1:10 mac-ip 0050.7966.6806
+                                 10.0.0.1              -       100     0       65000 65001 i
+ *  ec    RD: 10.0.0.1:10 mac-ip 0050.7966.6806
+                                 10.0.0.1              -       100     0       65000 65001 i
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807
+                                 -                     -       -       0       i
+ * >      RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.3:10 mac-ip 0050.7966.6808
+                                 10.0.0.3              -       100     0       65000 65003 i
+ *  ec    RD: 10.0.0.3:10 mac-ip 0050.7966.6808
+                                 10.0.0.3              -       100     0       65000 65003 i
+LEAF-02#
+LEAF-02#
+```
+
+
+```
+LEAF-03#sh bgp evpn route-type mac-ip
+BGP routing table information for VRF default
+Router identifier 10.0.0.3, local AS number 65003
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >Ec    RD: 10.0.0.1:10 mac-ip 0050.7966.6806
+                                 10.0.0.1              -       100     0       65000 65001 i
+ *  ec    RD: 10.0.0.1:10 mac-ip 0050.7966.6806
+                                 10.0.0.1              -       100     0       65000 65001 i
+ * >Ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807
+                                 10.0.0.2              -       100     0       65000 65002 i
+ *  ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807
+                                 10.0.0.2              -       100     0       65000 65002 i
+ * >Ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 10.0.0.2              -       100     0       65000 65002 i
+ *  ec    RD: 10.0.0.2:10 mac-ip 0050.7966.6807 10.1.11.102
+                                 10.0.0.2              -       100     0       65000 65002 i
+ * >      RD: 10.0.0.3:10 mac-ip 0050.7966.6808
+                                 -                     -       -       0       i
+LEAF-03#
+```
