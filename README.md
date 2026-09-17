@@ -1132,3 +1132,90 @@ AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Li
                                  -                     -       -       0       i
 LEAF-03#
 ```
+
+
+###Дополнение к дз: 
+
+убраны инт vlan 10 на всех лифах 
+```
+LEAF-01#config
+LEAF-01(config)#inter vlan 10
+LEAF-01(config-if-Vl10)#no ip ad
+LEAF-01(config-if-Vl10)#exit
+LEAF-01(config)#
+LEAF-01(config)#exit
+LEAF-01#
+
+```
+LEAF-02#
+LEAF-02#config
+LEAF-02(config)#inter vlan 10
+LEAF-02(config-if-Vl10)#no ip add
+LEAF-02(config-if-Vl10)#
+
+
+```
+
+```
+LEAF-03(config)#inter vlan 10
+LEAF-03(config-if-Vl10)#no ip add
+LEAF-03(config-if-Vl10)#exit
+LEAF-03(config)#exit
+LEAF-03#
+LEAF-03#commit
+% Invalid input
+LEAF-03#
+LEAF-03#
+
+```
+
+Pc1 пингует все адреса:
+
+```
+
+VPCS> 
+VPCS> 
+VPCS> ping 10.1.11.102
+
+84 bytes from 10.1.11.102 icmp_seq=1 ttl=64 time=162.593 ms
+84 bytes from 10.1.11.102 icmp_seq=2 ttl=64 time=59.063 ms
+^C
+VPCS> 
+VPCS> ping 10.1.11.103
+
+84 bytes from 10.1.11.103 icmp_seq=1 ttl=64 time=46.075 ms
+84 bytes from 10.1.11.103 icmp_seq=2 ttl=64 time=39.586 ms
+84 bytes from 10.1.11.103 icmp_seq=3 ttl=64 time=31.447 ms
+84 bytes from 10.1.11.103 icmp_seq=4 ttl=64 time=35.812 ms
+84 bytes from 10.1.11.103 icmp_seq=5 ttl=64 time=58.995 ms
+
+VPCS> ping 10.1.11.104
+
+host (10.1.11.104) not reachable
+
+VPCS> 
+
+```
+
+В таблице мак адресов видно, что маки приходят с vxlan1:
+```
+
+LEAF-01#show mac address-table vlan 10
+          Mac Address Table
+------------------------------------------------------------------
+
+Vlan    Mac Address       Type        Ports      Moves   Last Move
+----    -----------       ----        -----      -----   ---------
+  10    0050.7966.6806    DYNAMIC     Et5        1       0:00:58 ago
+  10    0050.7966.6807    DYNAMIC     Vx1        1       0:00:58 ago
+  10    0050.7966.6808    DYNAMIC     Vx1        1       0:00:52 ago
+Total Mac Addresses for this criterion: 3
+
+          Multicast Mac Address Table
+------------------------------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       ----        -----
+Total Mac Addresses for this criterion: 0
+LEAF-01#
+```
