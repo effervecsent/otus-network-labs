@@ -111,8 +111,8 @@ LEAF-03|Eth2|172.16.3.5/30|P2P Линк|SPINE-02 (Eth3)
 ### Bridged Overlay 
 
 ### Схема
-
 ![bridged overlay.PNG](bridged overlay.PNG)
+
 
 
 ### Настройка оборудования 
