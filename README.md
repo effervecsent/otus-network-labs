@@ -868,12 +868,12 @@ VPCS> ping 172.16.20.14
 84 bytes from 172.16.20.14 icmp_seq=4 ttl=63 time=59.855 ms
 84 bytes from 172.16.20.14 icmp_seq=5 ttl=63 time=49.984 ms
 
-
+```
 
 ### Symmetric IRB
 
 Был настроен symmetric IRB по схеме:
-[symmetricirb.PNG](symmetricirb.PNG)!
+![symmetricirb.PNG](symmetricirb.PNG)
 
 ### конфигурация Leaf1, 2, 3
 
