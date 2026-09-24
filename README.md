@@ -873,7 +873,7 @@ VPCS> ping 172.16.20.14
 ### Symmetric IRB
 
 Был настроен symmetric IRB по схеме:
-
+[symmetricirb.PNG](symmetricirb.PNG)!
 
 ### конфигурация Leaf1, 2, 3
 
