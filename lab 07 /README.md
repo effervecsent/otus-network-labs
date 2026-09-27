@@ -13,7 +13,7 @@
 
 ### Адресация Underlay
 
-![lab 07/mh.PNG](lab 07/mh.PNG)
+![mh.PNG](mh.PNG)
 
 
 ### Tаблица параметров Overlay (EVPN / VXLAN)
