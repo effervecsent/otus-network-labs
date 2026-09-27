@@ -385,7 +385,7 @@ interface Port-Channel1
 !
 interface Ethernet1
    description connected-to-Spine1-Ethernet3
-   shutdown
+  
    mtu 9214
    no switchport
    ip address 172.16.3.1/30
@@ -393,7 +393,7 @@ interface Ethernet1
 !
 interface Ethernet2
    description connected-to-Spine2-Ethernet3
-   shutdown
+  
    mtu 9214
    no switchport
    ip address 172.16.3.5/30
