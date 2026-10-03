@@ -780,7 +780,7 @@ Spine2#
 
 ### Настройка Multihoming на Leaf 03/Leaf 04
 
-```
+
 1. LACP
 	• Интерфейсы Ethernet3 на Leaf3 и Leaf4 объединены в  Port-Channel1 в режиме active.
 2. Идентификатор сегмента ESI
