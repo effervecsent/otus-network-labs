@@ -780,9 +780,133 @@ Spine2#
 
 ### Настройка Multihoming на Leaf 03/Leaf 04
 
+```
+1. LACP
+	• Интерфейсы Ethernet3 на Leaf3 и Leaf4 объединены в  Port-Channel1 в режиме active.
+2. Идентификатор сегмента ESI
+	• Команда evpn ethernet-segment identifier 0000:0000:0000:0000:0001 задает одинаковый ID на обоих коммутаторах. Это сообщает EVPN-фабрике, что порты подключены к одному и тому же серверу.
+3. Общий LACP System ID
+	• Команда lacp system-id 1111.2222.3333 маскирует два коммутатора под один. Сервер думает, что подключен к одному устройству, и балансирует трафик по обеим линиям одновременно.
+4. Выборы DF 
+	• Для предотвращения петель BUM-трафика используется алгоритм Preference.
+	• У Leaf4 приоритет выше (50), поэтому он выбран DF. Leaf3 (20) находится в резерве.
+5. Link Tracking
+	• Настроена группа CORE-TRACKING. Если у коммутатора упадут оба аплинка к Spine-коммутаторам, он автоматически погасит порт к серверу, чтобы трафик не блекхолился.
 
 
+Проверка: 
+
+```
+
+show bgp evpn esi 0000:0000:0000:0000:0001
+Leaf3#show bgp evpn esi 0000:0000:0000:0000:0001
+BGP routing table information for VRF default
+Router identifier 10.0.0.3, local AS number 65503
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.3:20 auto-discovery 0 0000:0000:0000:0000:0001
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.4:20 auto-discovery 0 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:20 auto-discovery 0 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ * >      RD: 10.0.0.3:1 auto-discovery 0000:0000:0000:0000:0001
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.4:1 auto-discovery 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:1 auto-discovery 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ * >Ec    RD: 10.0.0.4:20 mac-ip 5000.001b.5e8d
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:20 mac-ip 5000.001b.5e8d
+                                 10.0.0.4              -       100     0       65500 65504 i
+ * >Ec    RD: 10.0.0.4:20 mac-ip 5000.001b.5e8d 20.20.20.3
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:20 mac-ip 5000.001b.5e8d 20.20.20.3
+                                 10.0.0.4              -       100     0       65500 65504 i
+ * >      RD: 10.0.0.3:1 ethernet-segment 0000:0000:0000:0000:0001 10.0.0.3
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.4:1 ethernet-segment 0000:0000:0000:0000:0001 10.0.0.4
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:1 ethernet-segment 0000:0000:0000:0000:0001 10.0.0.4
+                                 10.0.0.4              -       100     0       65500 65504 i
+Leaf3#
+
+```
 
 
 ```
+
+Leaf3#show lacp interface brie
+State: A = Active, P = Passive; S=ShortTimeout, L=LongTimeout;
+       G = Aggregable, I = Individual; s+=InSync, s-=OutOfSync;
+       C = Collecting, X = state machine expired,
+       D = Distributing, d = default neighbor state
+             |                        Partner                            Actor 
+Port Status  | Sys-id                  Port#  State    OperKey  PortPri  Port# 
+---- --------|------------------------ ------ -------- -------- -------- ------
+Port Channel Port-Channel1:                                    
+Et3  Bundled | 8000,50-00-00-1b-5e-8d      1  ALGs+CD   0x0001    32768      3 
+
+                    |                 Actor                                    
+ Port      Status   |  State       OperKey     PortPriority   TimeoutMultiplier
+------- ------------|----------- ----------- ---------------- -----------------
+Port Channel Port-Channel1:                                           
+ Et3       Bundled  |  ALGs+CD      0x0001            32768                    
+
+Leaf3#
+
+```
+
+```
+
+Leaf3#show bgp evpn ROUte-type auto-discovery 
+BGP routing table information for VRF default
+Router identifier 10.0.0.3, local AS number 65503
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.3:20 auto-discovery 0 0000:0000:0000:0000:0001
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.4:20 auto-discovery 0 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:20 auto-discovery 0 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ * >      RD: 10.0.0.3:1 auto-discovery 0000:0000:0000:0000:0001
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.4:1 auto-discovery 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:1 auto-discovery 0000:0000:0000:0000:0001
+                                 10.0.0.4              -       100     0       65500 65504 i
+Leaf3#
+Leaf3#
+
+```
+
+
+```
+Leaf3#show bgp evpn ROUte-type ethernet-segment 
+BGP routing table information for VRF default
+Router identifier 10.0.0.3, local AS number 65503
+Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
+                    c - Contributing to ECMP, % - Pending BGP convergence
+Origin codes: i - IGP, e - EGP, ? - incomplete
+AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
+
+          Network                Next Hop              Metric  LocPref Weight  Path
+ * >      RD: 10.0.0.3:1 ethernet-segment 0000:0000:0000:0000:0001 10.0.0.3
+                                 -                     -       -       0       i
+ * >Ec    RD: 10.0.0.4:1 ethernet-segment 0000:0000:0000:0000:0001 10.0.0.4
+                                 10.0.0.4              -       100     0       65500 65504 i
+ *  ec    RD: 10.0.0.4:1 ethernet-segment 0000:0000:0000:0000:0001 10.0.0.4
+                                 10.0.0.4              -       100     0       65500 65504 i
+Leaf3#
+
 ```
