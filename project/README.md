@@ -504,4 +504,1481 @@ router ospf 1
 !
 end
  Sw-Edge-2#      
+
+
+
+- BGW 1: 
 ```
+BGW1#
+BGW1#Nov 12 17:25:31 BGW1 Bgp: %BGP-3-NOTIFICATION: sent to neighbor 10.1.0.102 (VRF default AS 65001) 4/0 (Hold Timer Expired Error/None) 0 bytes
+
+BGW1#
+BGW1#
+BGW1#sh run
+! Command: show running-config
+ ! device: BGW1 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname BGW1
+!
+spanning-tree mode mstp
+!
+vlan 10,20
+!
+interface Ethernet1
+   description to-RS
+   mtu 9214
+   no switchport
+   ip address 192.168.1.1/30
+!
+interface Ethernet2
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   description to_SW-EDge1
+   mtu 9214
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   description BGP-EVPN
+   ip address 10.1.0.101/32
+!
+interface Loopback1
+   ip address 100.100.100.100/32
+!
+interface Management1
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 100010
+   vxlan vlan 20 vni 100020
+   vxlan learn-restrict any
+!
+ip virtual-router mac-address 00:1c:73:00:00:10
+!
+ip routing
+!
+ip route 10.1.0.102/32 192.168.1.2
+!
+router bgp 65001
+   router-id 10.1.0.101
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor DCI peer group
+   neighbor DCI remote-as 65000
+   neighbor DCI allowas-in 3
+   neighbor DCI ebgp-multihop 3
+   neighbor DCI send-community extended
+   neighbor 10.1.0.102 remote-as 65001
+   neighbor 10.1.0.102 update-source Loopback0
+   neighbor 10.1.0.102 timers 60 180
+   neighbor 10.1.0.102 send-community extended
+   neighbor 192.168.1.2 peer group DCI
+   neighbor 192.168.1.2 allowas-in 3
+   neighbor 192.168.1.2 timers 60 180
+   !
+   vlan 10
+      rd 65001:100010
+      route-target both 100:100010
+      redistribute learned
+   !
+   vlan 20
+      rd 65001:100020
+      route-target both 200:100020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor DCI activate
+      neighbor 10.1.0.102 activate
+   !
+   address-family ipv4
+      neighbor DCI activate
+      neighbor 10.1.0.102 activate
+      network 10.1.0.101/32
+      network 100.100.100.100/32
+!
+end
+BGW1#      
+```
+
+
+- BGW 2:
+```
+BGW2#
+BGW2#sh run
+! Command: show running-config
+! device: BGW2 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname BGW2
+!
+spanning-tree mode mstp
+!
+vlan 10,20
+!
+interface Ethernet1
+   description to-RS
+   mtu 9214
+   no switchport
+   ip address 192.168.2.1/30
+!
+interface Ethernet2
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   description to_SW-EDge2
+   mtu 9214
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   description BGP-EVPN
+   ip address 10.1.0.102/32
+!
+interface Loopback1
+   ip address 100.100.100.100/32
+!
+interface Management1
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 100010
+   vxlan vlan 20 vni 100020
+   vxlan learn-restrict any
+!
+ip virtual-router mac-address 00:1c:73:00:00:10
+!
+ip routing
+!
+ip route 10.1.0.101/32 192.168.2.2
+!
+router bgp 65001
+   router-id 10.1.0.102
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor DCI peer group
+   neighbor DCI remote-as 65000
+   neighbor DCI allowas-in 3
+   neighbor DCI ebgp-multihop 3
+   neighbor DCI send-community extended
+   neighbor 10.1.0.101 remote-as 65001
+   neighbor 10.1.0.101 update-source Loopback0
+   neighbor 10.1.0.101 timers 60 180
+   neighbor 10.1.0.101 send-community extended
+   neighbor 192.168.2.2 peer group DCI
+   neighbor 192.168.2.2 allowas-in 3
+   neighbor 192.168.2.2 timers 60 180
+   !
+   vlan 10
+      rd 65001:100010
+      route-target both 100:100010
+      redistribute learned
+   !
+   vlan 20
+      rd 65001:100020
+      route-target both 200:100020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor DCI activate
+      neighbor 10.1.0.101 activate
+   !
+   address-family ipv4
+      neighbor DCI activate
+      neighbor 10.1.0.101 activate
+      network 10.1.0.102/32
+      network 100.100.100.100/32
+!
+end
+BGW2# 
+```
+
+
+- RS:
+
+
+```
+RS#
+RS#sh run
+! Command: show running-config
+! device: RS (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname RS
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   description to-BGW1 (eBGP, AS 65001)
+   mtu 9214
+   no switchport
+   ip address 192.168.1.2/30
+!
+interface Ethernet2
+   description to-BGW2 (eBGP, AS 65001)
+   mtu 9214
+   no switchport
+   ip address 192.168.2.2/30
+!
+interface Ethernet3
+   description to-BGW3 (eBGP, AS 65002)
+   mtu 9214
+   no switchport
+   ip address 192.168.3.2/30
+!
+interface Ethernet4
+   description to-BGW4 (eBGP, AS 65002)
+   mtu 9214
+   no switchport
+   ip address 192.168.4.2/30
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   description RS-Router-ID
+   ip address 10.255.255.23/32
+!
+interface Management1
+!
+ip routing
+!
+route-map PERMIT-ALL permit 10
+!
+router bgp 65000
+   router-id 10.255.255.23
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 4 ecmp 4
+   neighbor BGW-LEFT-eBGP peer group
+   neighbor BGW-LEFT-eBGP remote-as 65001
+   neighbor BGW-LEFT-eBGP send-community extended
+   neighbor BGW-RIGHT-eBGP peer group
+   neighbor BGW-RIGHT-eBGP remote-as 65002
+   neighbor BGW-RIGHT-eBGP send-community extended
+   neighbor 192.168.1.1 peer group BGW-LEFT-eBGP
+   neighbor 192.168.2.1 peer group BGW-LEFT-eBGP
+   neighbor 192.168.3.1 peer group BGW-RIGHT-eBGP
+   neighbor 192.168.4.1 peer group BGW-RIGHT-eBGP
+   !
+   address-family evpn
+      neighbor BGW-LEFT-eBGP activate
+      neighbor BGW-LEFT-eBGP next-hop-unchanged
+      neighbor BGW-RIGHT-eBGP activate
+      neighbor BGW-RIGHT-eBGP next-hop-unchanged
+   !
+   address-family ipv4
+      neighbor BGW-LEFT-eBGP activate
+      neighbor BGW-LEFT-eBGP next-hop-self
+      neighbor BGW-RIGHT-eBGP activate
+      neighbor BGW-RIGHT-eBGP next-hop-self
+!
+end
+RS# 
+```
+
+
+- BGW 3:
+
+
+```
+BGW3#sh run
+! Command: show running-config
+! device: BGW3 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname BGW3
+!
+spanning-tree mode mstp
+!
+vlan 10,20
+!
+interface Ethernet1
+   description to-RS
+   mtu 9214
+   no switchport
+   ip address 192.168.3.1/30
+!
+interface Ethernet2
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   description to-SPINE-01
+   mtu 9214
+   no switchport
+   ip address 172.16.5.1/30
+!
+interface Ethernet6
+   description to-SPINE-02
+   mtu 9214
+   no switchport
+   ip address 172.16.7.1/30
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   description BGP-EVPN-Router-ID
+   ip address 10.2.0.101/32
+!
+interface Loopback1
+   description Anycast-VTEP
+   ip address 200.200.200.200/32
+!
+interface Management1
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 100010
+   vxlan vlan 20 vni 100020
+   vxlan learn-restrict any
+!
+ip routing
+!
+router bgp 65002
+   router-id 10.2.0.101
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor DCI peer group
+   neighbor DCI remote-as 65000
+   neighbor DCI send-community extended
+   neighbor EVPN peer group
+   neighbor EVPN remote-as 65500
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY allowas-in 1
+   neighbor 10.0.1.1 peer group EVPN
+   neighbor 10.0.2.2 peer group EVPN
+   neighbor 10.2.0.102 remote-as 65002
+   neighbor 10.2.0.102 update-source Loopback0
+   neighbor 10.2.0.102 description iBGP-to-BGW4-via-Spines
+   neighbor 172.16.5.2 peer group UNDERLAY
+   neighbor 172.16.7.2 peer group UNDERLAY
+   neighbor 192.168.3.2 peer group DCI
+   !
+   vlan 10
+      rd 65002:10
+      rd evpn domain remote 65002:100010
+      route-target both 10:100010
+      route-target import export evpn domain remote 100:100010
+      redistribute learned
+   !
+   vlan 20
+      rd 65002:20
+      rd evpn domain remote 65002:100020
+      route-target both 20:100020
+      route-target import export evpn domain remote 200:100020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor DCI activate
+      neighbor DCI domain remote
+      neighbor EVPN activate
+      neighbor 10.0.1.1 activate
+      neighbor 10.0.2.2 activate
+      neighbor 10.2.0.102 activate
+   !
+   address-family ipv4
+      neighbor DCI activate
+      neighbor UNDERLAY activate
+      neighbor UNDERLAY next-hop-self
+      neighbor 10.2.0.102 activate
+      network 10.2.0.101/32
+      network 200.200.200.200/32
+!
+end
+BGW3#
+```
+
+- BGW 4:
+```
+BGW4#sh run
+! Command: show running-config
+! device: BGW4 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname BGW4
+!
+spanning-tree mode mstp
+!
+vlan 10,20
+!
+interface Ethernet1
+   description to-RS
+   mtu 9214
+   no switchport
+   ip address 192.168.4.1/30
+!
+interface Ethernet2
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   description to-SPINE-02
+   mtu 9214
+   no switchport
+   ip address 172.16.8.1/30
+!
+interface Ethernet6
+   description to-SPINE-01
+   mtu 9214
+   no switchport
+   ip address 172.16.6.1/30
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   description BGP-EVPN-Router-ID
+   ip address 10.2.0.102/32
+!
+interface Loopback1
+   description Anycast-VTEP ( BGW3)
+   ip address 200.200.200.200/32
+!
+interface Management1
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 100010
+   vxlan vlan 20 vni 100020
+   vxlan learn-restrict any
+!
+ip routing
+!
+router bgp 65002
+   router-id 10.2.0.102
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor DCI peer group
+   neighbor DCI remote-as 65000
+   neighbor DCI send-community extended
+   neighbor EVPN peer group
+   neighbor EVPN remote-as 65500
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY allowas-in 1
+   neighbor 10.0.1.1 peer group EVPN
+   neighbor 10.0.2.2 peer group EVPN
+   neighbor 10.2.0.101 remote-as 65002
+   neighbor 10.2.0.101 update-source Loopback0
+   neighbor 10.2.0.101 description iBGP-to-BGW3-via-Spines
+   neighbor 172.16.6.2 peer group UNDERLAY
+   neighbor 172.16.8.2 peer group UNDERLAY
+   neighbor 192.168.4.2 peer group DCI
+   !
+   vlan 10
+      rd 65002:10
+      rd evpn domain remote 65002:100010
+      route-target both 10:100010
+      route-target import export evpn domain remote 100:100010
+      redistribute learned
+   !
+   vlan 20
+      rd 65002:20
+      rd evpn domain remote 65002:100020
+      route-target both 20:100020
+      route-target import export evpn domain remote 200:100020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor DCI activate
+      neighbor DCI domain remote
+      neighbor EVPN activate
+      neighbor 10.0.1.1 activate
+      neighbor 10.0.2.2 activate
+      neighbor 10.2.0.101 activate
+   !
+   address-family ipv4
+      neighbor DCI activate
+      neighbor UNDERLAY activate
+      neighbor UNDERLAY next-hop-self
+      neighbor 10.2.0.101 activate
+      network 10.2.0.102/32
+      network 200.200.200.200/32
+!
+end
+```
+
+- Spine 1:
+
+
+```
+
+Spine1#sh run
+! Command: show running-config
+ ! device: Spine1 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname Spine1
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   description connected-to-Leaf1-Ethernet1
+   mtu 9214
+   no switchport
+   ip address 172.16.1.2/30
+!
+interface Ethernet2
+   description connected-to-Leaf2-Ethernet1
+   mtu 9214
+   no switchport
+   ip address 172.16.2.2/30
+!
+interface Ethernet3
+   description connected-to-Leaf3-Ethernet1
+   mtu 9214
+   no switchport
+   ip address 172.16.3.2/30
+!
+interface Ethernet4
+   description connected-to-Leaf4-Ethernet1
+   mtu 9214
+   no switchport
+   ip address 172.16.4.2/30
+!
+interface Ethernet5
+   description connected-to-BGW3-Ethernet5
+   mtu 9214
+   no switchport
+   ip address 172.16.5.2/30
+!
+interface Ethernet6
+   description connected-to-BGW4-Ethernet6
+   mtu 9214
+   no switchport
+   ip address 172.16.6.2/30
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.1.1/32
+!
+interface Management1
+!
+ip routing
+!
+peer-filter LEAVES_ASN
+   10 match as-range 65501-65535 result accept
+!
+router bgp 65500
+   router-id 10.0.1.1
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   bgp listen range 10.0.0.0/16 peer-group EVPN peer-filter LEAVES_ASN
+   bgp listen range 172.16.0.0/16 peer-group UNDERLAY peer-filter LEAVES_ASN
+   neighbor EVPN peer group
+   neighbor EVPN next-hop-unchanged
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor 10.2.0.101 peer group EVPN
+   neighbor 10.2.0.101 remote-as 65002
+   neighbor 10.2.0.101 description Static-EVPN-to-BGW3
+   neighbor 10.2.0.102 peer group EVPN
+   neighbor 10.2.0.102 remote-as 65002
+   neighbor 10.2.0.102 description Static-EVPN-to-BGW4
+   neighbor 172.16.5.1 remote-as 65002
+   neighbor 172.16.5.1 description Static-Underlay-to-BGW3
+   neighbor 172.16.6.1 remote-as 65002
+   neighbor 172.16.6.1 description Static-Underlay-to-BGW4
+   !
+   address-family evpn
+      neighbor EVPN activate
+      neighbor EVPN next-hop-unchanged
+      neighbor 10.2.0.101 activate
+      neighbor 10.2.0.102 activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      neighbor UNDERLAY next-hop-unchanged
+      neighbor 172.16.5.1 activate
+      neighbor 172.16.6.1 activate
+      network 10.0.1.1/32
+      network 172.16.5.0/30
+      network 172.16.6.0/30
+!
+end
+Spine1#    
+```
+
+- Spine 2:
+
+
+```
+Spine2#
+Spine2#sh run
+! Command: show running-config
+! device: Spine2 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname Spine2
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   description connected-to-Leaf1-Ethernet2
+   mtu 9214
+   no switchport
+   ip address 172.16.1.6/30
+!
+interface Ethernet2
+   description connected-to-Leaf2-Ethernet2
+   mtu 9214
+   no switchport
+   ip address 172.16.2.6/30
+!
+interface Ethernet3
+   description connected-to-Leaf3-Ethernet2
+   mtu 9214
+   no switchport
+   ip address 172.16.3.6/30
+!
+interface Ethernet4
+   description connected-to-Leaf4-Ethernet2
+   mtu 9214
+   no switchport
+   ip address 172.16.4.6/30
+!
+interface Ethernet5
+   description connected-to-BGW4-Ethernet5
+   mtu 9214
+   no switchport
+   ip address 172.16.8.2/30
+!
+interface Ethernet6
+   description connected-to-BGW3-Ethernet6
+   mtu 9214
+   no switchport
+   ip address 172.16.7.2/30
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.2.2/32
+!
+interface Management1
+!
+ip routing
+!
+peer-filter LEAVES_ASN
+   10 match as-range 65501-65535 result accept
+!
+router bgp 65500
+   router-id 10.0.2.2
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   bgp listen range 10.0.0.0/16 peer-group EVPN peer-filter LEAVES_ASN
+   bgp listen range 172.16.0.0/16 peer-group UNDERLAY peer-filter LEAVES_ASN
+   neighbor EVPN peer group
+   neighbor EVPN next-hop-unchanged
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor 10.2.0.101 peer group EVPN
+   neighbor 10.2.0.101 remote-as 65002
+   neighbor 10.2.0.101 description Static-EVPN-to-BGW3
+   neighbor 10.2.0.102 peer group EVPN
+   neighbor 10.2.0.102 remote-as 65002
+   neighbor 10.2.0.102 description Static-EVPN-to-BGW4
+   neighbor 172.16.7.1 remote-as 65002
+   neighbor 172.16.7.1 description Static-Underlay-to-BGW3
+   neighbor 172.16.8.1 remote-as 65002
+   neighbor 172.16.8.1 description Static-Underlay-to-BGW4
+   !
+   address-family evpn
+      neighbor EVPN activate
+      neighbor EVPN next-hop-unchanged
+      neighbor 10.2.0.101 activate
+      neighbor 10.2.0.102 activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      neighbor UNDERLAY next-hop-unchanged
+      neighbor 172.16.7.1 activate
+      neighbor 172.16.8.1 activate
+      network 10.0.2.2/32
+      network 172.16.7.0/30
+      network 172.16.8.0/30
+!
+end
+```
+
+- Leaf 1:
+
+
+```
+Leaf1#sh run
+! Command: show running-config
+! device: Leaf1 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+no logging console
+!
+hostname Leaf1
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 4094
+!
+vlan 10
+   name VL10
+!
+vlan 4094
+   name MLAG-PEERLINK
+   trunk group MLAG-PEERLINK
+!
+vrf instance MGMT
+!
+interface Port-Channel3
+   description ---Link-to-Server1---
+   switchport trunk allowed vlan 10
+   switchport mode trunk
+   mlag 1
+!
+interface Port-Channel78
+   description MLAG-PEERLINK
+   switchport mode trunk
+   switchport trunk group MLAG-PEERLINK
+   spanning-tree link-type point-to-point
+!
+interface Ethernet1
+   description connected-to-Spine1-Ethernet1
+   mtu 9214
+   no switchport
+   ip address 172.16.1.1/30
+!
+interface Ethernet2
+   description connected-to-Spine2-Ethernet1
+   mtu 9214
+   no switchport
+   ip address 172.16.1.5/30
+!
+interface Ethernet3
+   description ---Link-to-Server1---
+   switchport mode trunk
+   channel-group 3 mode active
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+   description MLAG-PEERLINK
+   channel-group 78 mode active
+!
+interface Ethernet8
+   description MLAG-PEERLINK
+   channel-group 78 mode active
+!
+interface Loopback0
+   ip address 10.0.0.1/32
+!
+interface Loopback1
+   description VXLAN-VTEP
+   ip address 10.0.0.112/32
+!
+interface Management1
+   vrf MGMT
+   ip address 192.168.0.1/30
+!
+interface Vlan10
+   shutdown
+   ip address virtual 10.10.10.1/24
+!
+interface Vlan4094
+   ip address 172.16.101.1/30
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 100010
+   vxlan learn-restrict any
+!
+ip virtual-router mac-address 00:1c:73:00:00:10
+!
+ip routing
+ip routing vrf MGMT
+!
+mlag configuration
+   domain-id LEAVES-1-2
+   local-interface Vlan4094
+   peer-address 172.16.101.2
+   peer-address heartbeat 192.168.0.2 vrf MGMT
+   peer-link Port-Channel78
+   dual-primary detection delay 1 action errdisable all-interfaces
+!
+ip route 200.200.200.200/32 172.16.1.2
+ip route 200.200.200.200/32 172.16.1.6
+!
+router bgp 65501
+   router-id 10.0.0.1
+   no bgp default ipv4-unicast
+   timers bgp 10 30
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor EVPN peer group
+   neighbor EVPN remote-as 65500
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY-MLAG peer group
+   neighbor UNDERLAY-MLAG remote-as 65501
+   neighbor UNDERLAY-MLAG next-hop-self
+   neighbor 10.0.1.1 peer group EVPN
+   neighbor 10.0.2.2 peer group EVPN
+   neighbor 172.16.1.2 peer group UNDERLAY
+   neighbor 172.16.1.6 peer group UNDERLAY
+   neighbor 172.16.101.2 peer group UNDERLAY-MLAG
+   !
+   vlan 10
+      rd auto
+      route-target both 10:100010
+      redistribute learned
+   !
+   address-family evpn
+      neighbor EVPN activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      neighbor UNDERLAY-MLAG activate
+      network 10.0.0.1/32
+      network 10.0.0.112/32
+!
+end
+Leaf1#
+```
+
+- Leaf 2:
+```
+Leaf2#
+Leaf2#sh run
+ ! Command: show running-config
+         ! device: Leaf2 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+no logging console
+!
+hostname Leaf2
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 4094
+!
+vlan 10
+   name VL10
+!
+vlan 4094
+   name MLAG-PEERLINK
+   trunk group MLAG-PEERLINK
+!
+vrf instance MGMT
+!
+interface Port-Channel3
+   description ---Link-to-Server1---
+   switchport trunk allowed vlan 10
+   switchport mode trunk
+   mlag 1
+!
+interface Port-Channel78
+   description MLAG-PEERLINK
+   switchport mode trunk
+   switchport trunk group MLAG-PEERLINK
+   spanning-tree link-type point-to-point
+!
+interface Ethernet1
+   description connected-to-Spine1-Ethernet2
+   mtu 9214
+   no switchport
+   ip address 172.16.2.1/30
+!
+interface Ethernet2
+   description connected-to-Spine2-Ethernet2
+   mtu 9214
+   no switchport
+   ip address 172.16.2.5/30
+!
+interface Ethernet3
+   description ---Link-to-Server1---
+   switchport mode trunk
+   channel-group 3 mode active
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+   description MLAG-PEERLINK
+   channel-group 78 mode active
+!
+interface Ethernet8
+   description MLAG-PEERLINK
+   channel-group 78 mode active
+!
+interface Loopback0
+   ip address 10.0.0.2/32
+!
+interface Loopback1
+   description VXLAN-VTEP
+   ip address 10.0.0.112/32
+!
+interface Management1
+   vrf MGMT
+   ip address 192.168.0.2/30
+!
+interface Vlan10
+   shutdown
+   ip address virtual 10.10.10.1/24
+!
+interface Vlan4094
+   no autostate
+   ip address 172.16.101.2/30
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 100010
+   vxlan learn-restrict any
+!
+ip virtual-router mac-address 00:1c:73:00:00:10
+!
+ip routing
+ip routing vrf MGMT
+!
+mlag configuration
+   domain-id LEAVES-1-2
+   local-interface Vlan4094
+   peer-address 172.16.101.1
+   peer-address heartbeat 192.168.0.1 vrf MGMT
+   peer-link Port-Channel78
+   dual-primary detection delay 1 action errdisable all-interfaces
+!
+ip route 200.200.200.200/32 172.16.2.2
+ip route 200.200.200.200/32 172.16.2.6
+!
+router bgp 65501
+   router-id 10.0.0.2
+   no bgp default ipv4-unicast
+   timers bgp 10 30
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor EVPN peer group
+   neighbor EVPN remote-as 65500
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor UNDERLAY-MLAG peer group
+   neighbor UNDERLAY-MLAG remote-as 65501
+   neighbor UNDERLAY-MLAG next-hop-self
+   neighbor 10.0.1.1 peer group EVPN
+   neighbor 10.0.2.2 peer group EVPN
+   neighbor 172.16.2.2 peer group UNDERLAY
+   neighbor 172.16.2.6 peer group UNDERLAY
+   neighbor 172.16.101.1 peer group UNDERLAY-MLAG
+   !
+   vlan 10
+      rd auto
+      route-target both 10:100010
+      redistribute learned
+   !
+   address-family evpn
+      neighbor EVPN activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      neighbor UNDERLAY-MLAG activate
+      network 10.0.0.2/32
+      network 10.0.0.112/32
+!
+end
+   Leaf2#   
+```
+
+- Leaf 3:
+
+
+```
+Leaf3#
+Leaf3#wr mem
+Copy completed successfully.
+Leaf3#
+Leaf3#
+Leaf3#sh run
+! Command: show running-config
+! device: Leaf3 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+link tracking group CORE-TRACKING
+   recovery delay 1
+!
+hostname Leaf3
+!
+spanning-tree mode mstp
+!
+vlan 20
+   name VL20
+!
+interface Port-Channel1
+   description Link_to_host3
+   switchport trunk allowed vlan 20
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:0001
+      designated-forwarder election algorithm preference 20
+      route-target import 00:00:00:00:00:01
+   lacp system-id 1111.2222.3333
+!
+interface Ethernet1
+   description connected-to-Spine1-Ethernet3
+   mtu 9214
+   no switchport
+   ip address 172.16.3.1/30
+   link tracking group CORE-TRACKING upstream
+!
+interface Ethernet2
+   description connected-to-Spine2-Ethernet3
+   mtu 9214
+   no switchport
+   ip address 172.16.3.5/30
+   link tracking group CORE-TRACKING upstream
+!
+interface Ethernet3
+   description ---Link-to-Server3---
+   switchport mode trunk
+   channel-group 1 mode active
+   link tracking group CORE-TRACKING downstream
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.0.3/32
+!
+interface Management1
+!
+interface Vlan20
+   shutdown
+   ip address virtual 20.20.20.1/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 20 vni 100020
+   vxlan learn-restrict any
+!
+ip virtual-router mac-address 00:1c:73:00:00:10
+!
+ip routing
+!
+ip route 200.200.200.200/32 172.16.3.2
+ip route 200.200.200.200/32 172.16.3.6
+!
+router bgp 65503
+   router-id 10.0.0.3
+   no bgp default ipv4-unicast
+   timers bgp 20 60
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor EVPN peer group
+   neighbor EVPN remote-as 65500
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor 10.0.1.1 peer group EVPN
+   neighbor 10.0.2.2 peer group EVPN
+   neighbor 172.16.3.2 peer group UNDERLAY
+   neighbor 172.16.3.6 peer group UNDERLAY
+   !
+   vlan 20
+      rd auto
+      route-target both 20:100020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor EVPN activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.0.0.3/32
+!
+end
+Leaf3#   
+```
+
+- Leaf 4:
+
+
+```
+Leaf4#wr mem
+Copy completed successfully.
+Leaf4#sh run
+! Command: show running-config
+! device: Leaf4 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+link tracking group CORE-TRACKING
+   recovery delay 1
+!
+hostname Leaf4
+!
+spanning-tree mode mstp
+!
+vlan 20
+   name VL20
+!
+interface Port-Channel1
+   description Link_to_host3
+   switchport trunk allowed vlan 20
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:0001
+      designated-forwarder election algorithm preference 50
+      route-target import 00:00:00:00:00:01
+   lacp system-id 1111.2222.3333
+!
+interface Ethernet1
+   description connected-to-Spine1-Ethernet3
+   mtu 9214
+   no switchport
+   ip address 172.16.4.1/30
+   link tracking group CORE-TRACKING upstream
+!
+interface Ethernet2
+   description connected-to-Spine2-Ethernet3
+   mtu 9214
+   no switchport
+   ip address 172.16.4.5/30
+   link tracking group CORE-TRACKING upstream
+!
+interface Ethernet3
+   description ---Link-to-Server3---
+   switchport mode trunk
+   channel-group 1 mode active
+   link tracking group CORE-TRACKING downstream
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback0
+   ip address 10.0.0.4/32
+!
+interface Management1
+!
+interface Vlan20
+   shutdown
+   ip address virtual 20.20.20.1/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 20 vni 100020
+   vxlan learn-restrict any
+!
+ip virtual-router mac-address 00:1c:73:00:00:10
+!
+ip routing
+!
+router bgp 65504
+   router-id 10.0.0.4
+   no bgp default ipv4-unicast
+   timers bgp 20 60
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor EVPN peer group
+   neighbor EVPN remote-as 65500
+   neighbor EVPN update-source Loopback0
+   neighbor EVPN ebgp-multihop 3
+   neighbor EVPN send-community extended
+   neighbor UNDERLAY peer group
+   neighbor UNDERLAY remote-as 65500
+   neighbor 10.0.1.1 peer group EVPN
+   neighbor 10.0.2.2 peer group EVPN
+   neighbor 172.16.4.2 peer group UNDERLAY
+   neighbor 172.16.4.6 peer group UNDERLAY
+   !
+   vlan 20
+      rd auto
+      route-target both 20:100020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor EVPN activate
+   !
+   address-family ipv4
+      neighbor UNDERLAY activate
+      network 10.0.0.4/32
+!
+end
+```
+- Host 1:
+
+
+```
+HOST-1#sh run
+! Command: show running-config
+! device: HOST-1 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname HOST-1
+!
+spanning-tree mode mstp
+!
+vlan 10
+!
+interface Port-Channel1
+   description link-to-leaves-1-2
+   switchport mode trunk
+!
+interface Ethernet1
+   description Link-to-Leaf-Fabric
+   switchport trunk allowed vlan 10
+   switchport mode trunk
+   channel-group 1 mode active
+!
+interface Ethernet2
+   channel-group 1 mode active
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Management1
+!
+interface Vlan10
+   description IP-Address-for-Host1
+   ip address 10.10.10.101/24
+!
+ip routing
+!
+ip route 0.0.0.0/0 10.10.10.1
+!
+end
+```
+- Host 2:
+
+
+```
+HOST-2#
+HOST-2#sh run
+! Command: show running-config
+! device: HOST-2 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname HOST-2
+!
+spanning-tree mode mstp
+!
+vlan 20
+!
+interface Port-Channel1
+   switchport mode trunk
+!
+interface Ethernet1
+   description description ---Link-to-Leaf3---
+   switchport mode trunk
+   channel-group 1 mode active
+!
+interface Ethernet2
+   description ---Link-to-Leaf4---
+   switchport mode trunk
+   channel-group 1 mode active
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Management1
+!
+interface Vlan20
+   ip address 20.20.20.3/24
+!
+ip routing
+!
+ip route 0.0.0.0/0 20.20.20.1
+!
+end
+```
+
