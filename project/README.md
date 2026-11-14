@@ -505,15 +505,13 @@ router ospf 1
 end
  Sw-Edge-2#      
 
-
-
-- BGW 1: 
 ```
-BGW1#
-BGW1#Nov 12 17:25:31 BGW1 Bgp: %BGP-3-NOTIFICATION: sent to neighbor 10.1.0.102 (VRF default AS 65001) 4/0 (Hold Timer Expired Error/None) 0 bytes
 
-BGW1#
-BGW1#
+- BGW 1:
+
+  
+```
+
 BGW1#sh run
 ! Command: show running-config
  ! device: BGW1 (vEOS-lab, EOS-4.29.2F)
@@ -622,6 +620,8 @@ BGW1#
 
 
 - BGW 2:
+
+  
 ```
 BGW2#
 BGW2#sh run
