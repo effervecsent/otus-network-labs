@@ -2215,3 +2215,139 @@ HOST-1#
   1. Переводит интерфейсы `Vlan10` и `Vlan20` на правых `Leaf1–4` в состояние **`shutdown`**.
   2. Включает внешние DCI-интерфейсы на `BGW3` и `BGW4` командой **`no shutdown`**, восстанавливая единый растянутый L2-домен.
 
+
+Пример скрипта: 
+
+```
+import time
+import ssl
+import logging
+from jsonrpclib import Server
+
+# Отключаем проверку самоподписанных SSL-сертификатов для лаборатории
+ssl._create_default_https_context = ssl._create_unverified_context
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
+# Настройки подключения (IP-адреса Management1)
+USER = "admin"
+PASS = "admin"
+
+BGW_NODES = {
+    "BGW3": {"ip": "192.168.0.103", "rs_peer": "192.168.3.2", "uplink": "Ethernet1"},
+    "BGW4": {"ip": "192.168.0.104", "rs_peer": "192.168.4.2", "uplink": "Ethernet1"},
+}
+
+LEAF_NODES = {
+    "Leaf1": {"ip": "192.168.0.1", "svi": "Vlan10"},
+    "Leaf2": {"ip": "192.168.0.2", "svi": "Vlan10"},
+    "Leaf3": {"ip": "192.168.0.3", "svi": "Vlan20"},
+    "Leaf4": {"ip": "192.168.0.4", "svi": "Vlan20"},
+}
+
+CHECK_INTERVAL = 15       # Проверка каждые 15 секунд
+FAILOVER_TIMEOUT = 300    # Порог срабатывания: 5 минут (300 секунд)
+MAINTENANCE_MODE = False  # Флаг для отключения автоматики при плановых работах
+
+
+def run_commands(ip, commands):
+    """Отправка списка команд на коммутатор Arista через eAPI."""
+    url = f"https://{USER}:{PASS}@{ip}/command-api"
+    switch = Server(url)
+    return switch.runCmds(1, commands)
+
+
+def is_dci_alive(name, cfg):
+    """Проверка статуса BGP-сессии с Route Server на пограничном шлюзе."""
+    try:
+        res = run_commands(cfg["ip"], ["enable", "show ip bgp summary"])
+        peers = res[1]["vrfs"]["default"]["peers"]
+        peer_info = peers.get(cfg["rs_peer"])
+        if peer_info and peer_info.get("peerState") == "Established":
+            return True
+        logging.warning(f"{name}: BGP-сессия с RS ({cfg['rs_peer']}) не в состоянии Established.")
+        return False
+    except Exception as e:
+        logging.error(f"{name}: Ошибка опроса устройства по eAPI: {e}")
+        return False
+
+
+def execute_fencing_and_failover():
+    """Принудительная изоляция BGW3/4 (Fencing) и активация шлюзов на Leaf1-4."""
+    logging.critical("ЗАПУСК ПРОЦЕДУРЫ FENCING И ПЕРЕКЛЮЧЕНИЯ ШЛЮЗОВ!")
+
+    # 1. Изолируем правый ЦОД: переводим внешние порты BGW3 и BGW4 в shutdown
+    for name, cfg in BGW_NODES.items():
+        try:
+            cmds = [
+                "enable",
+                "configure terminal",
+                f"interface {cfg['uplink']}",
+                "shutdown",
+                "end",
+                "write memory"
+            ]
+            run_commands(cfg["ip"], cmds)
+            logging.info(f"[FENCING] {name}: Интерфейс {cfg['uplink']} переведён в shutdown.")
+        except Exception as e:
+            logging.error(f"[FENCING] Не удалось изолировать {name}: {e}")
+
+    # 2. Активируем распределённые шлюзы Anycast Gateway на правых Leaf1-4
+    for name, cfg in LEAF_NODES.items():
+        try:
+            cmds = [
+                "enable",
+                "configure terminal",
+                f"interface {cfg['svi']}",
+                "no shutdown",
+                "end",
+                "write memory"
+            ]
+            run_commands(cfg["ip"], cmds)
+            logging.info(f"[FAILOVER] {name}: Шлюз {cfg['svi']} активирован (no shutdown).")
+        except Exception as e:
+            logging.error(f"[FAILOVER] Не удалось включить шлюз на {name}: {e}")
+
+    logging.critical("Переключение завершено. Правый ЦОД работает в автономном режиме.")
+
+
+def main():
+    downtime_start = None
+    failover_triggered = False
+
+    logging.info("Запущен мониторинг DCI-каналов BGW3 и BGW4...")
+
+    while True:
+        if MAINTENANCE_MODE or failover_triggered:
+            time.sleep(CHECK_INTERVAL)
+            continue
+
+        bgw3_ok = is_dci_alive("BGW3", BGW_NODES["BGW3"])
+        bgw4_ok = is_dci_alive("BGW4", BGW_NODES["BGW4"])
+
+        # Если упали ОБА канала одновременно
+        if not bgw3_ok and not bgw4_ok:
+            if downtime_start is None:
+                downtime_start = time.time()
+                logging.warning("Оба DCI-канала недоступны! Запущен таймер на 5 минут...")
+            else:
+                elapsed = int(time.time() - downtime_start)
+                logging.warning(f"Длительность сбоя: {elapsed} / {FAILOVER_TIMEOUT} сек.")
+                if elapsed >= FAILOVER_TIMEOUT:
+                    execute_fencing_and_failover()
+                    failover_triggered = True
+        else:
+            if downtime_start is not None:
+                logging.info("Связь по DCI восстановилась до истечения таймера. Сброс счётчика.")
+            downtime_start = None
+
+        time.sleep(CHECK_INTERVAL)
+
+
+if __name__ == "__main__":
+    main()
+
+```
