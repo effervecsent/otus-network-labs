@@ -118,4 +118,390 @@ MTU         : 1500
 
 ```
 
+- Stack-sw:
 
+```
+STACK-sw# sh run
+! Command: show running-config
+! device: STACK-sw (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model ribd
+!
+hostname STACK-sw
+!
+spanning-tree mode mstp
+!
+vlan 3-5,10,20
+!
+interface Ethernet1
+   description to-Host11
+   mtu 9214
+   switchport access vlan 10
+   spanning-tree portfast
+!
+interface Ethernet2
+   description to-Host12
+   mtu 9214
+   switchport access vlan 20
+   spanning-tree portfast
+!
+interface Ethernet3
+   description to-Firewall-Trunk
+   mtu 9214
+   switchport trunk allowed vlan 3-4,10,20
+   switchport mode trunk
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Management1
+!
+no ip routing
+!
+end
+STACK-sw# 
+```
+
+
+-Firewall:
+
+```
+
+Firewall#ping 20.20.20.
+ping: 20.20.20.: Name or service not known
+Firewall#
+Firewall#
+Firewall#sh run
+! Command: show running-config
+! device: Firewall (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname Firewall
+!
+spanning-tree mode mstp
+spanning-tree vlan-id 10,20 priority 4096
+!
+vlan 3
+   name OSPF-to-Sw-Edge-1
+!
+vlan 4
+   name OSPF-to-Sw-Edge-2
+!
+vlan 10
+   name Host-VLAN-10
+!
+vlan 20
+   name Host-VLAN-20
+!
+interface Ethernet1
+   shutdown
+   ip ospf network point-to-point
+!
+interface Ethernet2
+   shutdown
+   ip ospf network point-to-point
+!
+interface Ethernet3
+   description to-Stack-SW
+   switchport trunk allowed vlan 3-4,10,20
+   switchport mode trunk
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+   description to sw-edge1
+   switchport trunk allowed vlan 3,10,20
+   switchport mode trunk
+!
+interface Ethernet7
+   description to sw-edge2
+   switchport trunk allowed vlan 4,10,20
+   switchport mode trunk
+!
+interface Ethernet8
+!
+interface Management1
+!
+interface Vlan3
+   description OSPF-SVI-to-Sw-Edge-1
+   ip address 172.18.3.1/30
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Vlan4
+   description OSPF-SVI-to-Sw-Edge-2
+   ip address 172.18.4.1/30
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Vlan10
+   description Gateway-for-Host-VLAN10
+   ip address 10.10.10.1/24
+!
+interface Vlan20
+   description Gateway-for-Host-VLAN20
+   ip address 20.20.20.1/24
+!
+ip access-list ACL-FROM-EXTERNAL
+   10 permit ospf any any
+   20 permit icmp any any
+   30 permit tcp any any eq bgp
+   40 permit udp any any eq 4789
+!
+ip access-list ACL-FROM-INTERNAL
+   10 permit ospf any any
+   20 permit icmp any any
+   30 permit tcp any any eq bgp
+   40 permit ip 10.10.10.0/24 any
+   50 permit ip 20.20.20.0/24 any
+   60 permit udp any any eq 4789
+!
+ip routing
+!
+router ospf 1
+   router-id 10.255.255.255
+   passive-interface default
+   passive-interface Ethernet1
+   passive-interface Ethernet2
+   passive-interface Ethernet3
+   passive-interface Ethernet6
+   passive-interface Ethernet7
+   no passive-interface Vlan3
+   no passive-interface Vlan4
+   no passive-interface Vlan5
+   no passive-interface Vlan10
+   no passive-interface Vlan20
+   network 10.10.10.0/24 area 0.0.0.0
+   network 20.20.20.0/24 area 0.0.0.0
+   max-lsa 12000
+!
+end
+Firewall#
+```
+
+
+- SW-Edge1:
+
+```
+Sw-Edge-1#
+Sw-Edge-1#sh run
+! Command: show running-config
+! device: Sw-Edge-1 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname Sw-Edge-1
+!
+spanning-tree mode mstp
+!
+vlan 3
+   name OSPF-to-Firewall
+!
+vlan 10
+   name Host-VLAN-10
+!
+vlan 20
+   name Host-VLAN-20
+!
+interface Ethernet1
+   no switchport
+!
+interface Ethernet2
+   description L3-Cross-link-to-Sw-Edge-2
+   no switchport
+   ip address 192.168.10.1/30
+   ip ospf area 0.0.0.0
+!
+interface Ethernet3
+!
+interface Ethernet4
+   description to-Internet-Provider
+   no switchport
+   ip address 91.228.103.30/26
+!
+interface Ethernet5
+   description to-BGW1-Trunk
+   mtu 9214
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+!
+interface Ethernet6
+   description to-Firewall-Trunk
+   switchport trunk allowed vlan 3,10,20
+   switchport mode trunk
+!
+interface Ethernet7
+   mtu 9214
+!
+interface Ethernet8
+!
+interface Management1
+!
+interface Vlan3
+   description L3-Routing-to-Firewall
+   ip address 172.18.3.2/30
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+ip routing
+!
+router bgp 65001
+   router-id 91.228.103.30
+   no bgp default ipv4-unicast
+   timers bgp 1 3
+   neighbor 91.228.103.1 remote-as 12389
+   neighbor 91.228.103.1 description to-Internet-Router
+   !
+   address-family ipv4
+      neighbor 91.228.103.1 activate
+      network 91.228.103.0/26
+!
+router ospf 1
+   router-id 192.168.10.1
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   passive-interface Ethernet5
+   no passive-interface Ethernet5.100
+   passive-interface Ethernet6
+   no passive-interface Vlan3
+   passive-interface Vlan4
+   no passive-interface Vlan20
+   no passive-interface Vlan100
+   max-lsa 12000
+   default-information originate
+!
+end
+Sw-Edge-1#
+```
+
+
+
+- Sw-edge2:
+
+
+```
+Sw-Edge-2#sh run
+! Command: show running-config
+! device: Sw-Edge-2 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname Sw-Edge-2
+!
+spanning-tree mode mstp
+!
+vlan 4
+   name OSPF-to-Firewall
+!
+vlan 10
+   name Host-VLAN-10
+!
+vlan 20
+   name Host-VLAN-20
+!
+interface Ethernet1
+   no switchport
+!
+interface Ethernet2
+   description L3-Cross-link-to-Sw-Edge-1
+   no switchport
+   ip address 192.168.10.2/30
+   ip ospf area 0.0.0.0
+!
+interface Ethernet3
+   description to-Internet-Provider
+   no switchport
+   ip address 91.228.103.130/26
+!
+interface Ethernet4
+!
+interface Ethernet5
+   description to-BGW-2-Trunk
+   mtu 9214
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+!
+interface Ethernet6
+!
+interface Ethernet7
+   description to-Firewall-Trunk
+   mtu 9214
+   switchport trunk allowed vlan 4,10,20
+   switchport mode trunk
+!
+interface Ethernet8
+!
+interface Management1
+!
+interface Vlan4
+   description L3-Routing-to-Firewall
+   ip address 172.18.4.2/30
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+ip routing
+!
+router bgp 65001
+   router-id 91.228.103.130
+   no bgp default ipv4-unicast
+   timers bgp 1 3
+   neighbor 91.228.103.129 remote-as 12389
+   neighbor 91.228.103.129 description to-Internet-Router
+   !
+   address-family ipv4
+      neighbor 91.228.103.129 activate
+      network 91.228.103.128/26
+!
+router ospf 1
+   router-id 192.168.10.2
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   passive-interface Ethernet5
+   no passive-interface Ethernet5.100
+   passive-interface Ethernet7
+   no passive-interface Vlan4
+   passive-interface Vlan5
+   no passive-interface Vlan20
+   no passive-interface Vlan100
+   max-lsa 12000
+   default-information originate
+!
+end
+ Sw-Edge-2#      
+```
