@@ -1084,10 +1084,9 @@ end
 
 
 ```
-
 Spine1#sh run
 ! Command: show running-config
- ! device: Spine1 (vEOS-lab, EOS-4.29.2F)
+! device: Spine1 (vEOS-lab, EOS-4.29.2F)
 !
 ! boot system flash:/vEOS-lab.swi
 !
@@ -1163,6 +1162,12 @@ router bgp 65500
    neighbor EVPN ebgp-multihop 3
    neighbor EVPN send-community extended
    neighbor UNDERLAY peer group
+   neighbor 10.0.0.3 peer group EVPN
+   neighbor 10.0.0.3 remote-as 65503
+   neighbor 10.0.0.3 description Static-EVPN-to-Leaf3
+   neighbor 10.0.0.4 peer group EVPN
+   neighbor 10.0.0.4 remote-as 65504
+   neighbor 10.0.0.4 description Static-EVPN-to-Leaf4
    neighbor 10.2.0.101 peer group EVPN
    neighbor 10.2.0.101 remote-as 65002
    neighbor 10.2.0.101 description Static-EVPN-to-BGW3
@@ -1177,6 +1182,8 @@ router bgp 65500
    address-family evpn
       neighbor EVPN activate
       neighbor EVPN next-hop-unchanged
+      neighbor 10.0.0.3 activate
+      neighbor 10.0.0.4 activate
       neighbor 10.2.0.101 activate
       neighbor 10.2.0.102 activate
    !
@@ -1190,14 +1197,15 @@ router bgp 65500
       network 172.16.6.0/30
 !
 end
-Spine1#    
+Spine1#  
 ```
 
 - Spine 2:
 
 
 ```
-Spine2#
+Spine2#wr mem 
+Copy completed successfully.
 Spine2#sh run
 ! Command: show running-config
 ! device: Spine2 (vEOS-lab, EOS-4.29.2F)
@@ -1276,6 +1284,12 @@ router bgp 65500
    neighbor EVPN ebgp-multihop 3
    neighbor EVPN send-community extended
    neighbor UNDERLAY peer group
+   neighbor 10.0.0.3 peer group EVPN
+   neighbor 10.0.0.3 remote-as 65503
+   neighbor 10.0.0.3 description Static-EVPN-to-Leaf3
+   neighbor 10.0.0.4 peer group EVPN
+   neighbor 10.0.0.4 remote-as 65504
+   neighbor 10.0.0.4 description Static-EVPN-to-Leaf4
    neighbor 10.2.0.101 peer group EVPN
    neighbor 10.2.0.101 remote-as 65002
    neighbor 10.2.0.101 description Static-EVPN-to-BGW3
@@ -1290,6 +1304,8 @@ router bgp 65500
    address-family evpn
       neighbor EVPN activate
       neighbor EVPN next-hop-unchanged
+      neighbor 10.0.0.3 activate
+      neighbor 10.0.0.4 activate
       neighbor 10.2.0.101 activate
       neighbor 10.2.0.102 activate
    !
@@ -1303,12 +1319,15 @@ router bgp 65500
       network 172.16.8.0/30
 !
 end
+Spine2#
 ```
 
 - Leaf 1:
 
 
 ```
+Leaf1#write memory
+Copy completed successfully.
 Leaf1#sh run
 ! Command: show running-config
 ! device: Leaf1 (vEOS-lab, EOS-4.29.2F)
@@ -1336,6 +1355,8 @@ vlan 4094
    trunk group MLAG-PEERLINK
 !
 vrf instance MGMT
+!
+vrf instance VRF1
 !
 interface Port-Channel3
    description ---Link-to-Server1---
@@ -1393,6 +1414,7 @@ interface Management1
 !
 interface Vlan10
    shutdown
+   vrf VRF1
    ip address virtual 10.10.10.1/24
 !
 interface Vlan4094
@@ -1402,12 +1424,14 @@ interface Vxlan1
    vxlan source-interface Loopback1
    vxlan udp-port 4789
    vxlan vlan 10 vni 100010
+   vxlan vrf VRF1 vni 111111
    vxlan learn-restrict any
 !
 ip virtual-router mac-address 00:1c:73:00:00:10
 !
 ip routing
 ip routing vrf MGMT
+ip routing vrf VRF1
 !
 mlag configuration
    domain-id LEAVES-1-2
@@ -1417,6 +1441,10 @@ mlag configuration
    peer-link Port-Channel78
    dual-primary detection delay 1 action errdisable all-interfaces
 !
+ip route 10.0.0.3/32 172.16.1.2
+ip route 10.0.0.3/32 172.16.1.6
+ip route 10.0.0.4/32 172.16.1.2
+ip route 10.0.0.4/32 172.16.1.6
 ip route 200.200.200.200/32 172.16.1.2
 ip route 200.200.200.200/32 172.16.1.6
 !
@@ -1455,17 +1483,23 @@ router bgp 65501
       neighbor UNDERLAY-MLAG activate
       network 10.0.0.1/32
       network 10.0.0.112/32
+   !
+   vrf VRF1
+      rd 65501:111111
+      route-target import evpn 1:111111
+      route-target export evpn 1:111111
+      redistribute connected
 !
 end
-Leaf1#
 ```
 
 - Leaf 2:
 ```
-Leaf2#
-Leaf2#sh run
- ! Command: show running-config
-         ! device: Leaf2 (vEOS-lab, EOS-4.29.2F)
+Leaf1#write memory
+Copy completed successfully.
+Leaf1#sh run
+! Command: show running-config
+! device: Leaf1 (vEOS-lab, EOS-4.29.2F)
 !
 ! boot system flash:/vEOS-lab.swi
 !
@@ -1477,7 +1511,7 @@ service routing protocols model multi-agent
 !
 no logging console
 !
-hostname Leaf2
+hostname Leaf1
 !
 spanning-tree mode mstp
 no spanning-tree vlan-id 4094
@@ -1490,6 +1524,8 @@ vlan 4094
    trunk group MLAG-PEERLINK
 !
 vrf instance MGMT
+!
+vrf instance VRF1
 !
 interface Port-Channel3
    description ---Link-to-Server1---
@@ -1504,16 +1540,16 @@ interface Port-Channel78
    spanning-tree link-type point-to-point
 !
 interface Ethernet1
-   description connected-to-Spine1-Ethernet2
+   description connected-to-Spine1-Ethernet1
    mtu 9214
    no switchport
-   ip address 172.16.2.1/30
+   ip address 172.16.1.1/30
 !
 interface Ethernet2
-   description connected-to-Spine2-Ethernet2
+   description connected-to-Spine2-Ethernet1
    mtu 9214
    no switchport
-   ip address 172.16.2.5/30
+   ip address 172.16.1.5/30
 !
 interface Ethernet3
    description ---Link-to-Server1---
@@ -1535,7 +1571,7 @@ interface Ethernet8
    channel-group 78 mode active
 !
 interface Loopback0
-   ip address 10.0.0.2/32
+   ip address 10.0.0.1/32
 !
 interface Loopback1
    description VXLAN-VTEP
@@ -1543,40 +1579,46 @@ interface Loopback1
 !
 interface Management1
    vrf MGMT
-   ip address 192.168.0.2/30
+   ip address 192.168.0.1/30
 !
 interface Vlan10
    shutdown
+   vrf VRF1
    ip address virtual 10.10.10.1/24
 !
 interface Vlan4094
-   no autostate
-   ip address 172.16.101.2/30
+   ip address 172.16.101.1/30
 !
 interface Vxlan1
    vxlan source-interface Loopback1
    vxlan udp-port 4789
    vxlan vlan 10 vni 100010
+   vxlan vrf VRF1 vni 111111
    vxlan learn-restrict any
 !
 ip virtual-router mac-address 00:1c:73:00:00:10
 !
 ip routing
 ip routing vrf MGMT
+ip routing vrf VRF1
 !
 mlag configuration
    domain-id LEAVES-1-2
    local-interface Vlan4094
-   peer-address 172.16.101.1
-   peer-address heartbeat 192.168.0.1 vrf MGMT
+   peer-address 172.16.101.2
+   peer-address heartbeat 192.168.0.2 vrf MGMT
    peer-link Port-Channel78
    dual-primary detection delay 1 action errdisable all-interfaces
 !
-ip route 200.200.200.200/32 172.16.2.2
-ip route 200.200.200.200/32 172.16.2.6
+ip route 10.0.0.3/32 172.16.1.2
+ip route 10.0.0.3/32 172.16.1.6
+ip route 10.0.0.4/32 172.16.1.2
+ip route 10.0.0.4/32 172.16.1.6
+ip route 200.200.200.200/32 172.16.1.2
+ip route 200.200.200.200/32 172.16.1.6
 !
 router bgp 65501
-   router-id 10.0.0.2
+   router-id 10.0.0.1
    no bgp default ipv4-unicast
    timers bgp 10 30
    distance bgp 20 200 200
@@ -1593,9 +1635,9 @@ router bgp 65501
    neighbor UNDERLAY-MLAG next-hop-self
    neighbor 10.0.1.1 peer group EVPN
    neighbor 10.0.2.2 peer group EVPN
-   neighbor 172.16.2.2 peer group UNDERLAY
-   neighbor 172.16.2.6 peer group UNDERLAY
-   neighbor 172.16.101.1 peer group UNDERLAY-MLAG
+   neighbor 172.16.1.2 peer group UNDERLAY
+   neighbor 172.16.1.6 peer group UNDERLAY
+   neighbor 172.16.101.2 peer group UNDERLAY-MLAG
    !
    vlan 10
       rd auto
@@ -1608,22 +1650,22 @@ router bgp 65501
    address-family ipv4
       neighbor UNDERLAY activate
       neighbor UNDERLAY-MLAG activate
-      network 10.0.0.2/32
+      network 10.0.0.1/32
       network 10.0.0.112/32
+   !
+   vrf VRF1
+      rd 65501:111111
+      route-target import evpn 1:111111
+      route-target export evpn 1:111111
+      redistribute connected
 !
 end
-   Leaf2#   
 ```
 
 - Leaf 3:
 
 
 ```
-Leaf3#
-Leaf3#wr mem
-Copy completed successfully.
-Leaf3#
-Leaf3#
 Leaf3#sh run
 ! Command: show running-config
 ! device: Leaf3 (vEOS-lab, EOS-4.29.2F)
@@ -1645,6 +1687,8 @@ spanning-tree mode mstp
 !
 vlan 20
    name VL20
+!
+vrf instance VRF1
 !
 interface Port-Channel1
    description Link_to_host3
@@ -1694,25 +1738,31 @@ interface Management1
 !
 interface Vlan20
    shutdown
+   vrf VRF1
    ip address virtual 20.20.20.1/24
 !
 interface Vxlan1
    vxlan source-interface Loopback0
    vxlan udp-port 4789
    vxlan vlan 20 vni 100020
+   vxlan vrf VRF1 vni 111111
    vxlan learn-restrict any
 !
 ip virtual-router mac-address 00:1c:73:00:00:10
 !
 ip routing
+ip routing vrf VRF1
 !
+ip route 10.0.0.112/32 172.16.3.2
+ip route 10.0.0.112/32 172.16.3.6
+ip route 10.0.1.1/32 172.16.3.2
+ip route 10.0.2.2/32 172.16.3.6
 ip route 200.200.200.200/32 172.16.3.2
 ip route 200.200.200.200/32 172.16.3.6
 !
 router bgp 65503
    router-id 10.0.0.3
    no bgp default ipv4-unicast
-   timers bgp 20 60
    distance bgp 20 200 200
    maximum-paths 2 ecmp 2
    neighbor EVPN peer group
@@ -1738,17 +1788,22 @@ router bgp 65503
    address-family ipv4
       neighbor UNDERLAY activate
       network 10.0.0.3/32
+   !
+   vrf VRF1
+      rd 65503:111111
+      route-target import evpn 1:111111
+      route-target export evpn 1:111111
+      redistribute connected
 !
 end
-Leaf3#   
+Leaf3#
 ```
 
 - Leaf 4:
 
 
 ```
-Leaf4#wr mem
-Copy completed successfully.
+Leaf4#
 Leaf4#sh run
 ! Command: show running-config
 ! device: Leaf4 (vEOS-lab, EOS-4.29.2F)
@@ -1770,6 +1825,8 @@ spanning-tree mode mstp
 !
 vlan 20
    name VL20
+!
+vrf instance VRF1
 !
 interface Port-Channel1
    description Link_to_host3
@@ -1819,22 +1876,31 @@ interface Management1
 !
 interface Vlan20
    shutdown
+   vrf VRF1
    ip address virtual 20.20.20.1/24
 !
 interface Vxlan1
    vxlan source-interface Loopback0
    vxlan udp-port 4789
    vxlan vlan 20 vni 100020
+   vxlan vrf VRF1 vni 111111
    vxlan learn-restrict any
 !
 ip virtual-router mac-address 00:1c:73:00:00:10
 !
 ip routing
+ip routing vrf VRF1
+!
+ip route 10.0.0.112/32 172.16.4.2
+ip route 10.0.0.112/32 172.16.4.6
+ip route 10.0.1.1/32 172.16.4.2
+ip route 10.0.2.2/32 172.16.4.6
+ip route 200.200.200.200/32 172.16.4.2
+ip route 200.200.200.200/32 172.16.4.6
 !
 router bgp 65504
    router-id 10.0.0.4
    no bgp default ipv4-unicast
-   timers bgp 20 60
    distance bgp 20 200 200
    maximum-paths 2 ecmp 2
    neighbor EVPN peer group
@@ -1860,8 +1926,15 @@ router bgp 65504
    address-family ipv4
       neighbor UNDERLAY activate
       network 10.0.0.4/32
+   !
+   vrf VRF1
+      rd 65504:111111
+      route-target import evpn 1:111111
+      route-target export evpn 1:111111
+      redistribute connected
 !
 end
+Leaf4#
 ```
 - Host 1:
 
@@ -1981,4 +2054,164 @@ ip route 0.0.0.0/0 20.20.20.1
 !
 end
 ```
+
+### 4. Переключение шлюзов с ЦОД на РЦОД 
+
+Проверяем, что в arp таблице хостов видим mac-адрес шлюзов на Firewall: 
+```
+Total Mac Addresses for this criterion: 0
+Firewall#sh inter vlan 10
+Vlan10 is up, line protocol is up (connected)
+  Hardware is Vlan, address is 5000.00d8.ac19 (bia 5000.00d8.ac19)
+  Description: Gateway-for-Host-VLAN10
+  Internet address is 10.10.10.1/24
+  Broadcast address is 255.255.255.255
+  IP MTU 1500 bytes (default)
+  Up 13 minutes, 28 seconds
+Firewall#sh inter vlan 20
+Vlan20 is up, line protocol is up (connected)
+  Hardware is Vlan, address is 5000.00d8.ac19 (bia 5000.00d8.ac19)
+  Description: Gateway-for-Host-VLAN20
+  Internet address is 20.20.20.1/24
+  Broadcast address is 255.255.255.255
+  IP MTU 1500 bytes (default)
+  Up 15 minutes, 14 seconds
+Firewall#
+
+```
+```
+HOST-1>show arp
+Address         Age (sec)  Hardware Addr   Interface
+10.10.10.1        0:10:29  5000.00d8.ac19  Vlan10, Port-Channel1
+HOST-1>
+```
+
+
+```
+HOST-2>show ip arp
+Address         Age (sec)  Hardware Addr   Interface
+20.20.20.1        0:13:38  5000.00d8.ac19  Vlan20, Port-Channel1
+HOST-2>
+```
+
+Выключаем шлюзы на Firewall и поднимаем их в правой фабрике на leaf-коммутаторах. 
+
+На Firewall:
+```
+configure terminal
+interface Vlan10
+   shutdown
+!
+interface Vlan20
+   shutdown
+end
+```
+
+
+На Leaf1 и Leaf2 (для VLAN 10):
+
+```
+configure terminal
+interface Vlan10
+   no shutdown
+end
+
+```
+
+На Leaf3 и Leaf4 (для VLAN 20):
+
+```
+configure terminal
+interface Vlan20
+   no shutdown
+end
+```
+
+Чистим arp-cash и проверяем доступность: 
+```
+HOST-1#clear arp-cache
+HOST-1#
+HOST-1#
+HOST-1#
+HOST-1#ping 10.10.10.1
+PING 10.10.10.1 (10.10.10.1) 72(100) bytes of data.
+80 bytes from 10.10.10.1: icmp_seq=1 ttl=64 time=25.5 ms
+80 bytes from 10.10.10.1: icmp_seq=2 ttl=64 time=46.4 ms
+80 bytes from 10.10.10.1: icmp_seq=3 ttl=64 time=27.9 ms
+80 bytes from 10.10.10.1: icmp_seq=4 ttl=64 time=21.0 ms
+80 bytes from 10.10.10.1: icmp_seq=5 ttl=64 time=15.0 ms
+
+--- 10.10.10.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 101ms
+rtt min/avg/max/mdev = 15.074/27.217/46.429/10.567 ms, pipe 2, ipg/ewma 25.395/25.735 ms
+HOST-1#ping 10.10.10.11
+PING 10.10.10.11 (10.10.10.11) 72(100) bytes of data.
+
+--- 10.10.10.11 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 47ms
+
+
+HOST-1#
+HOST-1#ping 10.10.10.11
+PING 10.10.10.11 (10.10.10.11) 72(100) bytes of data.
+
+--- 10.10.10.11 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 51ms
+
+HOST-1#ping 10.10.10.11
+PING 10.10.10.11 (10.10.10.11) 72(100) bytes of data.
+80 bytes from 10.10.10.11: icmp_seq=1 ttl=64 time=192 ms
+80 bytes from 10.10.10.11: icmp_seq=2 ttl=64 time=185 ms
+80 bytes from 10.10.10.11: icmp_seq=3 ttl=64 time=186 ms
+80 bytes from 10.10.10.11: icmp_seq=4 ttl=64 time=191 ms
+80 bytes from 10.10.10.11: icmp_seq=5 ttl=64 time=194 ms
+
+--- 10.10.10.11 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 48ms
+rtt min/avg/max/mdev = 185.867/190.119/194.509/3.505 ms, pipe 5, ipg/ewma 12.016/191.600 ms
+HOST-1#ping 20.20.20.1
+PING 20.20.20.1 (20.20.20.1) 72(100) bytes of data.
+80 bytes from 20.20.20.1: icmp_seq=1 ttl=63 time=46.6 ms
+80 bytes from 20.20.20.1: icmp_seq=2 ttl=63 time=48.9 ms
+80 bytes from 20.20.20.1: icmp_seq=3 ttl=63 time=86.0 ms
+80 bytes from 20.20.20.1: icmp_seq=4 ttl=63 time=81.7 ms
+80 bytes from 20.20.20.1: icmp_seq=5 ttl=63 time=51.7 ms
+
+--- 20.20.20.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 88ms
+rtt min/avg/max/mdev = 46.633/63.018/86.036/17.187 ms, pipe 4, ipg/ewma 22.048/55.075 ms
+HOST-1#ping 20.20.20.3
+PING 20.20.20.3 (20.20.20.3) 72(100) bytes of data.
+80 bytes from 20.20.20.3: icmp_seq=1 ttl=62 time=117 ms
+80 bytes from 20.20.20.3: icmp_seq=2 ttl=62 time=106 ms
+80 bytes from 20.20.20.3: icmp_seq=3 ttl=62 time=119 ms
+80 bytes from 20.20.20.3: icmp_seq=4 ttl=62 time=117 ms
+80 bytes from 20.20.20.3: icmp_seq=5 ttl=62 time=119 ms
+
+--- 20.20.20.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 50ms
+rtt min/avg/max/mdev = 106.512/116.048/119.423/4.851 ms, pipe 5, ipg/ewma 12.633/116.986 ms
+HOST-1#
+
+```
+
+## 5. Архитектура отказоустойчивости и автоматизации переключения 
+
+При проектировании автоматического переключения шлюзов по умолчанию (Failover) в растянутом L2-домене ключевым риском является ситуация **Split-Brain** — одновременная работа двух шлюзов с одинаковыми IP-адресами (`10.10.10.1` и `20.20.20.1`) в левом и правом ЦОДах при обрыве межцодового канала связи (DCI).
+
+Для исключения этого риска предложена автономная схема автоматизации на базе механизма **Fencing (принудительной самоизоляции площадки)**:
+
+### 5.1. Алгоритм автоматического переключения (Failover)
+Контроллер автоматизации (или встроенный обработчик событий Arista EOS Event-Handler), размещённый внутри правого ЦОДа, непрерывно отслеживает состояние внешних DCI-линков и BGP-сессий на пограничных шлюзах `BGW3` и `BGW4`:
+
+1. **Детектирование аварии с выдержкой времени:** Если оба внешних канала (на `BGW3` и `BGW4` в сторону Route Server) недоступны непрерывно более **5 минут** (защита от кратковременных сбоев и флапов BGP), инцидент классифицируется как потеря связности с левым ЦОДом.
+2. **Принудительная изоляция (Fencing):** Скрипт переводит внешние интерфейсы `Ethernet1` (в сторону `RS`) на `BGW3` и `BGW4` в состояние административного отключения (**`shutdown`**). Правый ЦОД намеренно изолируется от левой площадки на уровне Layer 2.
+3. **Активация локальных шлюзов:** После подтверждения изоляции DCI-стыков скрипт активирует распределённые шлюзы Anycast Gateway (**`no shutdown`**) на интерфейсах `Vlan10` (`Leaf1/2`) и `Vlan20` (`Leaf3/4`), а также рассылает Gratuitous ARP для обновления кэша серверов.
+
+### 5.2. Преимущества подхода и порядок восстановления (Failback)
+* **Полная защита от Split-Brain:** Даже если причиной сбоя был обрыв оптики, а левый ЦОД продолжал работать (или перезагрузился и восстановился автоматически), при восстановлении физического канала L2-мост не склеится бесконтрольно, так как порты на `BGW3/4` заблокированы административно.
+* **Автономность:** Механизм не зависит от внешних облачных арбитров и третьих площадок — внутренние сервисы правого ЦОДа продолжают штатно взаимодействовать между VLAN 10 и VLAN 20 через локальные Leaf-коммутаторы.
+* **Безопасный ручной возврат (Manual Failback):** После устранения аварии и проверки стабильности левого ЦОДа инженер выполняет возврат в контролируемом окне:
+  1. Переводит интерфейсы `Vlan10` и `Vlan20` на правых `Leaf1–4` в состояние **`shutdown`**.
+  2. Включает внешние DCI-интерфейсы на `BGW3` и `BGW4` командой **`no shutdown`**, восстанавливая единый растянутый L2-домен.
 
